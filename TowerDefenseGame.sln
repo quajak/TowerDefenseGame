@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2016
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TowerDefense", "TrySFML2\TowerDefense.csproj", "{BC2D5EF2-7816-4AB8-8655-DDABE7485BAF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BC2D5EF2-7816-4AB8-8655-DDABE7485BAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC2D5EF2-7816-4AB8-8655-DDABE7485BAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC2D5EF2-7816-4AB8-8655-DDABE7485BAF}.Debug|x64.ActiveCfg = Debug|x64
+		{BC2D5EF2-7816-4AB8-8655-DDABE7485BAF}.Debug|x64.Build.0 = Debug|x64
+		{BC2D5EF2-7816-4AB8-8655-DDABE7485BAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC2D5EF2-7816-4AB8-8655-DDABE7485BAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC2D5EF2-7816-4AB8-8655-DDABE7485BAF}.Release|x64.ActiveCfg = Release|x64
+		{BC2D5EF2-7816-4AB8-8655-DDABE7485BAF}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EA9CE711-2596-4D20-9489-81B166B9D20D}
+	EndGlobalSection
+EndGlobal
