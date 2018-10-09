@@ -115,7 +115,7 @@ namespace TrySFML2
                 }
             }
             // now update to fit difficulty
-            money += mainMenu.difficulty * 8;
+            money = mainMenu.difficulty * 8;
             baseEvolutionFactor = mainMenu.difficulty / 2f;
 
             objects.Add(new MenuGUI());

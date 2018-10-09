@@ -53,20 +53,21 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="sfmlnet-audio-2">
-      <HintPath>..\..\..\..\Desktop\RandomProgrammieren\SFML.Net-2.2\lib\sfmlnet-audio-2.dll</HintPath>
+    <Reference Include="sfmlnet-audio-2, Version=2.2.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\sfmlnet-audio-2.dll</HintPath>
     </Reference>
     <Reference Include="sfmlnet-graphics-2, Version=2.2.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Desktop\RandomProgrammieren\SFML.Net-2.2\lib\sfmlnet-graphics-2.dll</HintPath>
+      <HintPath>lib\sfmlnet-graphics-2.dll</HintPath>
     </Reference>
     <Reference Include="sfmlnet-system-2, Version=2.2.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Desktop\RandomProgrammieren\SFML.Net-2.2\lib\sfmlnet-system-2.dll</HintPath>
+      <HintPath>lib\sfmlnet-system-2.dll</HintPath>
     </Reference>
     <Reference Include="sfmlnet-window-2, Version=2.2.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Desktop\RandomProgrammieren\SFML.Net-2.2\lib\sfmlnet-window-2.dll</HintPath>
+      <HintPath>lib\sfmlnet-window-2.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -105,6 +106,10 @@
     <Content Include="csfml-window-2.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="lib\sfmlnet-audio-2.dll" />
+    <Content Include="lib\sfmlnet-graphics-2.dll" />
+    <Content Include="lib\sfmlnet-system-2.dll" />
+    <Content Include="lib\sfmlnet-window-2.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
