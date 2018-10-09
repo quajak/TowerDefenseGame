@@ -23,7 +23,7 @@ namespace TrySFML2
 
         public static Random random = new Random();
 
-        public static Vector2u size;
+        public static Vector2u gameSize;
 
         public static Tower ToCreate = new MachineGun(0, 0);
         static Font font = new Font("arial.ttf");
@@ -71,7 +71,7 @@ namespace TrySFML2
         static void Main(string[] args)
         {
             window = new RenderWindow(VideoMode.DesktopMode, "Game");
-            size = window.Size;
+            gameSize = window.Size;
             window.Closed += Window_Closed;
             window.GainedFocus += Window_GainedFocus;
             window.LostFocus += Window_LostFocus;
@@ -100,15 +100,16 @@ namespace TrySFML2
                         int num = random.Next(3 + (int)EvolutionFactor);
                         for (int i = 0; i < num; i++)
                         {
+                            int eSize = random.Next(1, (int)EvolutionFactor);
                             int tries = 0;
                             while (tries++ < 100) // So we dont get stuck for ever
                             {
-                                int posX = random.Next((int)size.X);
-                                int posY = random.Next((int)size.Y);
+                                int posX = random.Next((int)gameSize.X);
+                                int posY = random.Next((int)gameSize.Y);
                                 var leastDistance = playerBuildings.Select(b => b.position).Select(p => E.Distance(p, new Vector2f(posX, posY))).Min();
                                 if(leastDistance > 100) // TOOO: different towers have different regions of effect
                                 {
-                                    Enemy item1 = new Enemy(posX, posY);
+                                    Enemy item1 = new Enemy(posX, posY, eSize);
                                     enemies.Add(item1);
                                     toChange.Add(item1);
                                     break;
@@ -130,6 +131,9 @@ namespace TrySFML2
 
                 TimeSpan timeSpan = DateTime.Now - dateTime;
                 dateTime = DateTime.Now;
+                double totalMilliseconds = timeSpan.TotalMilliseconds; //Extreme lags or other interruptions cause too large delays for the game to handle
+                totalMilliseconds = totalMilliseconds > 100 ? 100 : totalMilliseconds; //so we cut at 0.1s
+                timeSpan = new TimeSpan(0, 0, 0, 0, (int)totalMilliseconds);
 
                 if (!MainBase.Available) //While the game is running
                 {
@@ -139,8 +143,6 @@ namespace TrySFML2
                 //Start rendering + entity updates
                 window.Clear(Color.Blue);
                 objects = objects.OrderByDescending(o => o.renderLayer).ToList();
-                double totalMilliseconds = timeSpan.TotalMilliseconds; //Extreme lags or other interruptions cause too large delays for the game to handle
-                totalMilliseconds = totalMilliseconds > 100 ? 100 : totalMilliseconds; //so we cut at 0.1s
                 for (int i = 0; i < objects.Count; i++)
                 {
                     Entity item = objects[i];
@@ -209,7 +211,7 @@ namespace TrySFML2
             //After game is over code
             Text gameOver = new Text("Game Over!", font, 64)
             {
-                Position = new Vector2f(size.X / 2 - 100, size.Y / 2 - 64),
+                Position = new Vector2f(gameSize.X / 2 - 100, gameSize.Y / 2 - 64),
                 Color = Color.Red
             };
             window.Display();

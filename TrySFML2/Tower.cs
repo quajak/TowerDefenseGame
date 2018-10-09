@@ -104,7 +104,7 @@ namespace TrySFML2
                             float dX = item.position.X - (position.X + 5);
                             float dY = item.position.Y - (position.Y + 5);
                             float angle = (float)Math.Atan2(dY, dX) / (float)Math.PI * 180f;
-                            Program.toChange.Add(new Lazor(position.X + 5, position.Y + 5, 600, 6, angle));
+                            Program.toChange.Add(new Lazor(position.X + 5, position.Y + 5, 600, 2, angle));
                         }
                     }
             }
@@ -197,7 +197,7 @@ namespace TrySFML2
         public override Shape Update(double timeDiff)
         {
             distance += (float)Math.Sqrt(Math.Pow(velocity.X * timeDiff / 1000f, 2) + Math.Pow(velocity.Y * timeDiff / 1000f, 2));
-            if ((position.X < 0 || position.X > Program.size.X) || (position.Y < 0 || position.Y > Program.size.Y) || distance > maxDistance)
+            if ((position.X < 0 || position.X > Program.gameSize.X) || (position.Y < 0 || position.Y > Program.gameSize.Y) || distance > maxDistance)
             {
                 Program.toChange.Add(this);
             }
