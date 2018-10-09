@@ -31,6 +31,7 @@ namespace TrySFML2
         public static Font font = new Font("arial.ttf");
 
         private static int money = 10;
+        public static int moneyRate = 1;
         static Text moneyText = new Text("", font, 32)
         {
             Position = new Vector2f(800, 10)
@@ -116,7 +117,8 @@ namespace TrySFML2
             }
             // now update to fit difficulty
             money = mainMenu.difficulty * 8;
-            baseEvolutionFactor = mainMenu.difficulty / 2f;
+            baseEvolutionFactor = (mainMenu.difficulty + 1) / 2f;
+            moneyRate = (mainMenu.difficulty + 2) / 3;
 
             objects.Add(new MenuGUI());
 
@@ -270,10 +272,33 @@ namespace TrySFML2
                 window.Display();
             }
         }
+        public static bool IsFree(float x, float y, Shape s)
+        {
+            if (s is RectangleShape rectangle)
+            {
+                return IsFree(x, y, rectangle.Size.X, rectangle.Size.Y);
+            }
+            else if (s is CircleShape circle)
+            {
+                return IsFree(x, y, circle.Radius);
+            }
+            throw new Exception();
+        }
 
         public static bool IsFree(float X, float Y, float Width, float Height)
         {
             Entity entity = new Entity(X - Width / 2, Y - Height / 2, new RectangleShape(new Vector2f(Width, Height)));
+            foreach (var en in objects)
+            {
+                if (PolygonCollision(en, entity))
+                    return false;
+            }
+            return true;
+        }
+
+        public static bool IsFree(float x, float y, float radius)
+        {
+            Entity entity = new Entity(x - radius/ 2, y - radius/ 2, new CircleShape(radius));
             foreach (var en in objects)
             {
                 if (PolygonCollision(en, entity))
@@ -287,12 +312,23 @@ namespace TrySFML2
             list = list.OrderBy(l => l.clickLayer).ToList();
             foreach (var item in list)
             {
-                var rectangleShape = item.shape as RectangleShape;
-                if (((item.position.X <= X) && (item.position.X + rectangleShape.Size.X > X)) && (item.position.Y <= Y && item.position.Y + rectangleShape.Size.Y > Y))
+                if(item.shape is RectangleShape rectangleShape)
                 {
-                    if (!(item is GUI g) || g.shown)
+                    if (((item.position.X <= X) && (item.position.X + rectangleShape.Size.X > X)) && (item.position.Y <= Y && item.position.Y + rectangleShape.Size.Y > Y))
                     {
-                        return item;
+                        if (!(item is GUI g) || g.shown)
+                        {
+                            return item;
+                        }
+                    }
+                } else if(item.shape is CircleShape circleShape)
+                {
+                    if(circleShape.Radius > E.Distance(new Vector2f(X,Y), item.position))
+                    {
+                        if (!(item is GUI g) || g.shown)
+                        {
+                            return item;
+                        }
                     }
                 }
             }
@@ -307,7 +343,7 @@ namespace TrySFML2
             {
                 if (ToCreate != null && (!(ToCreate is MachineGun) || MachineGun.Available))
                 {
-                    if(ToCreate.cost <= money && IsFree(e.X, e.Y, (ToCreate.shape as RectangleShape).Size.X, (ToCreate.shape as RectangleShape).Size.Y))
+                    if(ToCreate.cost <= money && IsFree(e.X, e.Y, ToCreate.shape))
                     { 
                         Entity item = ToCreate.Create(e.X - 5, e.Y - 5);
                         lock (playerBuildings)

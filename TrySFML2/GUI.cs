@@ -207,6 +207,9 @@ namespace TrySFML2
             item = new GUIField(20, 180, 60, 60, Color.Green, "LazorGun");
             parts.Add(item);
             Program.objects.Add(item);
+            item = new GUIField(20, 260, 60, 60, Color.Black, "Bomb");
+            parts.Add(item);
+            Program.objects.Add(item);
         }
 
         public override void OnClick(int x, int y, Mouse.Button button)
@@ -236,6 +239,10 @@ namespace TrySFML2
                         case "LazorGun":
                             if (LazorGun.Available)
                                 Program.ToCreate = new LazorGun(x, y);
+                            break;
+                        case "Bomb":
+                            if (Bomb.Available)
+                                Program.ToCreate = new Bomb(x, y);
                             break;
                         default:
                             break;
@@ -272,6 +279,10 @@ namespace TrySFML2
             color.A = LazorGun.Available ? (byte)255 : (byte)100;
             s.FillColor = color;
 
+            s = parts.Find(p => p.name == "Bomb").shape;
+            color = s.FillColor;
+            color.A = Bomb.Available ? (byte)255 : (byte)100;
+            s.FillColor = color;
 
             return base.Update(timeDiff);
         }

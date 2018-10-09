@@ -13,7 +13,8 @@ namespace TrySFML2
         private static int instances = 0;
         public static bool Available
         {
-            get {
+            get
+            {
                 return instances == 0;
             }
         }
@@ -42,7 +43,7 @@ namespace TrySFML2
             while (time < 0)
             {
                 time += 1000;
-                Program.Money++;
+                Program.Money += Program.moneyRate;
             }
 
             return base.Update(timeDiff);
@@ -56,6 +57,53 @@ namespace TrySFML2
         public Tower(float ax, float ay, Shape shape, int cost) : base(ax, ay, shape)
         {
             this.cost = cost;
+        }
+    }
+
+    class Bomb : Tower
+    {
+        static int _cost = 3;
+        static float maxRadius = 30;
+        float radius = 1;
+        float growth = 0.03f;
+        float timeAtMax = 0;
+        static float maxTimeAtMax = 800; //In milliseconds
+        public Bomb(float x, float y) : base(x, y, new CircleShape(3), _cost)
+        {
+            shape.FillColor = Color.Black;
+        }
+
+        public static bool Available
+        {
+            get
+            {
+                return Program.Money >= _cost && !MainBase.Available;
+            }
+        }
+
+        public override Entity Create(int x, int y)
+        {
+            return new Bomb(x, y);
+        }
+
+        public override Shape Update(double timeDiff)
+        {
+            if (radius > maxRadius)
+            {
+                if (timeAtMax > maxTimeAtMax)
+                    Program.toChange.Add(this);
+                timeAtMax += (float)timeDiff;
+            }
+            else
+            {
+                float diff = growth * (float)timeDiff;
+                radius += diff;
+                (shape as CircleShape).Radius = radius;
+                position.X -= diff;
+                position.Y -= diff;
+                shape.Position = position;
+            }
+            return base.Update(timeDiff);
         }
     }
 
@@ -115,7 +163,7 @@ namespace TrySFML2
     class Lazor : Entity
     {
         public double time;
-        public Lazor(float x, float y, float length, float width, float angle) : base(x,y, new RectangleShape(new Vector2f(length, width)) { Position = new Vector2f(x, y), Rotation = angle, FillColor = new Color(140, 14, 0 , 255) })
+        public Lazor(float x, float y, float length, float width, float angle) : base(x, y, new RectangleShape(new Vector2f(length, width)) { Position = new Vector2f(x, y), Rotation = angle, FillColor = new Color(140, 14, 0, 255) })
         {
 
         }
@@ -144,7 +192,7 @@ namespace TrySFML2
 
         public MachineGun(int aX, int aY, bool buy = false) : base(aX, aY, new RectangleShape(new Vector2f(10, 10)), _cost)
         {
-            if(buy)
+            if (buy)
                 Program.Money -= cost;
             shape.FillColor = Color.Cyan;
         }
@@ -157,27 +205,27 @@ namespace TrySFML2
         public override Shape Update(double timeDiff)
         {
             attackTime -= timeDiff;
-            if(attackTime < 0)
+            if (attackTime < 0)
             {
                 attackTime = maxAttackTime;
-                lock (Program.toChange) lock (Program.enemies) 
-                {
+                lock (Program.toChange) lock (Program.enemies)
+                    {
                         var possible = from enemy in Program.enemies
                                        where E.Distance(this, enemy) < 200
                                        select enemy;
                         var list = possible.OrderBy(x => E.Distance(this, x)).Take(1).ToList();
-                        if(list.Count != 0)
+                        if (list.Count != 0)
                         {
                             Entity item = list[0];
                             //Generate bullet
                             float dX = item.position.X - (position.X + Program.random.Next(10) - 5);
                             float dY = item.position.Y - (position.Y + Program.random.Next(10) - 5);
-                            float vX = dX / Math.Max(Math.Abs(dX), Math.Abs(dY)) + (float)(Program.random.NextDouble() - 0.5d) / 4f ;
-                            float vY = dY / Math.Max(Math.Abs(dX), Math.Abs(dY)) + (float)(Program.random.NextDouble() - 0.5d) / 4f ;
+                            float vX = dX / Math.Max(Math.Abs(dX), Math.Abs(dY)) + (float)(Program.random.NextDouble() - 0.5d) / 4f;
+                            float vY = dY / Math.Max(Math.Abs(dX), Math.Abs(dY)) + (float)(Program.random.NextDouble() - 0.5d) / 4f;
                             float scale = E.Scale(vX, vY, 1300);
                             Program.toChange.Add(new Bullet(position.X, position.Y, vX * scale, vY * scale, 1300));
                         }
-                }
+                    }
             }
             return base.Update(timeDiff);
         }
@@ -190,7 +238,7 @@ namespace TrySFML2
         public Bullet(float aX, float aY, float vX, float vY, float maxDistance) : base(aX, aY, vX, vY, new RectangleShape(new Vector2f(10, 2)))
         {
             shape.Origin = new Vector2f(1, 3);
-            shape.Rotation = (float)(Math.Atan(vY/vX) / (2 * Math.PI) * 360);
+            shape.Rotation = (float)(Math.Atan(vY / vX) / (2 * Math.PI) * 360);
             this.maxDistance = maxDistance;
         }
 

@@ -21,21 +21,32 @@ namespace TrySFML2
                     _y = tx * (float)Math.Sin(degrees) + _y * (float)Math.Cos(degrees);
                 }
                 List<Vector2f> points = new List<Vector2f>();
-                RectangleShape rectangleShape = (shape as RectangleShape);
-                points.Add(new Vector2f(position.X, position.Y));
-                double angle = shape.Rotation/ 180f  * (float)Math.PI;
-                float x = 0;
-                float y = rectangleShape.Size.Y;
-                RotateVector2d(ref x, ref y, angle);
-                points.Add(new Vector2f(position.X + x, position.Y + y));
-                x = rectangleShape.Size.X;
-                y = rectangleShape.Size.Y;
-                RotateVector2d(ref x, ref y, angle);
-                points.Add(new Vector2f(position.X + x, position.Y + y));
-                x = rectangleShape.Size.X;
-                y = 0;
-                RotateVector2d(ref x, ref y, angle);
-                points.Add(new Vector2f(position.X + x, position.Y + y));
+
+                if(shape is RectangleShape rectangleShape)
+                {
+                    points.Add(new Vector2f(position.X, position.Y));
+                    double angle = shape.Rotation/ 180f  * (float)Math.PI;
+                    float x = 0;
+                    float y = rectangleShape.Size.Y;
+                    RotateVector2d(ref x, ref y, angle);
+                    points.Add(new Vector2f(position.X + x, position.Y + y));
+                    x = rectangleShape.Size.X;
+                    y = rectangleShape.Size.Y;
+                    RotateVector2d(ref x, ref y, angle);
+                    points.Add(new Vector2f(position.X + x, position.Y + y));
+                    x = rectangleShape.Size.X;
+                    y = 0;
+                    RotateVector2d(ref x, ref y, angle);
+                    points.Add(new Vector2f(position.X + x, position.Y + y));
+                } else if(shape is CircleShape circleShape)
+                {
+                    // We approximate the circle with 36 points, the position is the top left corner, so we have to center it
+                    for (int i = 0; i < 36; i++)
+                    {
+                        points.Add(new Vector2f(position.X + circleShape.Radius / 2 + circleShape.Radius * (float)Math.Cos(i / 18f * Math.PI),
+                            position.Y + circleShape.Radius / 2 + circleShape.Radius * (float)Math.Sin((float)i / 18f * Math.PI)));
+                    }
+                }
                 return points.AsEnumerable();
 
             }

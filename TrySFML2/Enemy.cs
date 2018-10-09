@@ -54,6 +54,7 @@ namespace TrySFML2
             Collides.Add(typeof(Bullet));
             Collides.Add(typeof(MainBase));
             Collides.Add(typeof(Lazor));
+            Collides.Add(typeof(Bomb));
         }
 
         public override void Collision(Entity collided)
@@ -73,8 +74,9 @@ namespace TrySFML2
                 case Lazor l:
                     Pop();
                     break;
-                case Entity e:
-
+                case Bomb b:
+                    Pop();
+                    break;
                 default:
                     break;
             }
