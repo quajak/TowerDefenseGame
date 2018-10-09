@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SFML.Graphics;
 using SFML.System;
+using SFML.Window;
 
 namespace TrySFML2
 {
@@ -86,9 +87,8 @@ namespace TrySFML2
 
         }
 
-        virtual public void OnClick(int x, int y)
+        virtual public void OnClick(int x, int y, Mouse.Button button)
         {
-
         }
 
         virtual public Entity Create(int x,int y)

@@ -13,6 +13,7 @@ namespace TrySFML2
 {
     class Program
     {
+        public static GameEvent gameEvent = GameEvent.None;
         static RenderWindow window;
 
         public static List<Entity> objects = new List<Entity>();
@@ -20,13 +21,14 @@ namespace TrySFML2
         public static List<Entity> enemies = new List<Entity>();
         public static List<Entity> playerBuildings = new List<Entity>();
         public static List<Shape> shapes = new List<Shape>(); //keep for debug reasons
+        public static List<Text> texts = new List<Text>();
 
         public static Random random = new Random();
 
         public static Vector2u gameSize;
 
         public static Tower ToCreate = new MachineGun(0, 0);
-        static Font font = new Font("arial.ttf");
+        public static Font font = new Font("arial.ttf");
 
         private static int money = 10;
         static Text moneyText = new Text("", font, 32)
@@ -37,10 +39,12 @@ namespace TrySFML2
         public static int EnemiesKilled = 0;
         public static long timePlayed = 0;
 
+        static float baseEvolutionFactor = 1f;
+
         public static float EvolutionFactor {
             get
             {
-                return 1 * Math.Max(1f, (float)Math.Log10(EnemiesKilled + 1)) * Math.Max(1f, timePlayed / 60000f); //60 Sekunden bevor die Enemies wegen der Zeit rampen
+                return baseEvolutionFactor * Math.Max(1f, (float)Math.Log10(EnemiesKilled + 1)) * Math.Max(1f, timePlayed / 60000f); //60 Sekunden bevor die Enemies wegen der Zeit rampen
             }
         }
 
@@ -49,8 +53,8 @@ namespace TrySFML2
             get
             {
                 float evolutionFactor = EvolutionFactor;
-                float eP = Math.Max(1f, (float)Math.Log10(EnemiesKilled + 1)) / evolutionFactor * 100;
-                float tP = Math.Max(1f, timePlayed / 100000f) / evolutionFactor * 100;
+                float eP = baseEvolutionFactor * Math.Max(1f, (float)Math.Log10(EnemiesKilled + 1)) / evolutionFactor * 100;
+                float tP = baseEvolutionFactor * Math.Max(1f, timePlayed / 100000f) / evolutionFactor * 100;
                 return $"{evolutionFactor.ToString("0.00")} - {eP.ToString("0")}% {tP.ToString("0")}%";
             }
         }
@@ -77,9 +81,46 @@ namespace TrySFML2
             window.LostFocus += Window_LostFocus;
             window.MouseButtonPressed += Window_MouseButtonPressed;
 
+            MainMenuGUI mainMenu = new MainMenuGUI();
+            objects.Add(mainMenu);
+            while (window.IsOpen) //Pre game loop
+            {
+                window.DispatchEvents(); // Here all event handlers are called
+                window.Clear(Color.Black);
+
+                //Start rendering + entity updates
+                window.Clear(Color.Blue);
+                objects = objects.OrderByDescending(o => o.renderLayer).ToList();
+                for (int i = 0; i < objects.Count; i++)
+                {
+                    Entity item = objects[i];
+                    window.Draw(item.Update(0));
+                }
+
+                foreach (var item in shapes)
+                {
+                    window.Draw(item);
+                }
+                foreach (var text in texts)
+                {
+                    window.Draw(text);
+                }
+                window.Display();
+                Thread.Sleep(10);
+                if(gameEvent == GameEvent.Next)
+                {
+                    mainMenu.Delete();
+                    objects.Remove(mainMenu);
+                    break;
+                }
+            }
+            // now update to fit difficulty
+            money += mainMenu.difficulty * 8;
+            baseEvolutionFactor = mainMenu.difficulty / 2f;
+
             objects.Add(new MenuGUI());
 
-            Text text = new Text("", font, 32)
+            Text fpsCounter = new Text("", font, 32)
             {
                 Color = Color.Red,
                 Position = new Vector2f(1000, 10)
@@ -192,11 +233,11 @@ namespace TrySFML2
                 }
                 c++;
                 c %= frameLength;
-                text.DisplayedString = $"{fps} FPS";
+                fpsCounter.DisplayedString = $"{fps} FPS";
 
                 //Update texts
                 evolutionFactorText.DisplayedString = EvolutionFactorString;
-                window.Draw(text);
+                window.Draw(fpsCounter);
                 window.Draw(evolutionFactorText);
                 window.Draw(moneyText);
 
@@ -279,7 +320,7 @@ namespace TrySFML2
             }
             else
             {
-                clicked.OnClick(e.X, e.Y);
+                clicked.OnClick(e.X, e.Y, e.Button);
             }
         }
 
@@ -342,5 +383,7 @@ namespace TrySFML2
             }
             return intersect;
         }
+
+        public enum GameEvent { Next, None };
     }
 }

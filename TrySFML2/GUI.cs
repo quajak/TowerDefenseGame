@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SFML.Graphics;
 using SFML.System;
+using SFML.Window;
 
 namespace TrySFML2
 {
@@ -33,14 +34,19 @@ namespace TrySFML2
             base.Collision(collided);
         }
 
-        public override void OnClick(int x, int y)
+        public override void OnClick(int x, int y, Mouse.Button button)
         {
-            base.OnClick(x, y);
+            base.OnClick(x, y, button);
         }
 
         public override Shape Update(double timeDiff)
         {
             return base.Update(timeDiff);
+        }
+
+        public virtual void Delete()
+        {
+
         }
     }
 
@@ -52,6 +58,133 @@ namespace TrySFML2
             this.name = name;
             renderLayer = 1;
         }
+    }
+
+    class GUIText : GUI
+    {
+        
+        readonly Text text;
+        private string content;
+
+        public GUIText(float x, float y, string content, Color color, int font = 16) : base(x,y, 1, 1)
+        {
+            shape = null;
+            text = new Text(content, Program.font, (uint)font)
+            {
+                Color = color,
+                Position = new Vector2f(x, y)
+            };
+            Program.texts.Add(text);
+            renderLayer = 1;
+            this.Content = content;
+        }
+
+        public string Content
+        {
+            get => content; set
+            {
+                content = value;
+                text.DisplayedString = content;
+            }
+        }
+
+        public override void Delete()
+        {
+            Program.texts.Remove(text);
+        }
+    }
+
+    class GuiButton : GUI
+    {
+        public string Content
+        {
+            get
+            {
+                return content;
+            }
+            set
+            {
+                content = value;
+                text.Content = content;
+            }
+        }
+
+        GUIText text;
+        private string content;
+
+        public GuiButton(float x, float y, float width, float height, Color color, string content, string name = "") : base(x,y, width, height)
+        {
+            shape.FillColor = color;
+            this.name = name;
+            renderLayer = 10;
+            clickLayer = 1;
+            text = new GUIText(x + 10, y + 10, content, Color.Red);
+            this.content = content;
+        }
+
+        public override void OnClick(int x, int y, Mouse.Button button)
+        {
+            MouseButtonEventArgs args = new MouseButtonEventArgs(new MouseButtonEvent() { X = x, Y = y, Button=button });
+            Click.Invoke(this, args);
+        }
+
+        public override void Delete()
+        {
+            text.Delete();
+            base.Delete();
+        }
+
+        public event EventHandler<MouseButtonEventArgs> Click;
+    }
+
+    class MainMenuGUI : GUI
+    {
+        List<GUI> parts = new List<GUI>();
+        GuiButton difficultyButton;
+        public int difficulty = 1;
+        public MainMenuGUI() : base(0, 0, Program.gameSize.X, Program.gameSize.Y)
+        {
+            shape.FillColor = new Color(200, 0, 0, 100);
+            GUIText text = new GUIText(Program.gameSize.X / 3, 200, "Tower Defense Game!", Color.Blue, 64);
+            parts.Add(text);
+            difficultyButton = new GuiButton(Program.gameSize.X / 2 - 200, 300, 150, 40, new Color(0, 0, 200, 100), "Difficult: 1", "difficultyButton");
+            parts.Add(difficultyButton);
+            Program.objects.Add(difficultyButton);
+            difficultyButton.Click += DifficultyButton_Click;
+            GuiButton button = new GuiButton(Program.gameSize.X / 2 - 200, 400, 150, 40, new Color(0, 0, 200, 100), "Start Game");
+            parts.Add(button);
+            Program.objects.Add(button);
+            button.Click += Button_Click;
+        }
+
+        private void Button_Click(object sender, MouseButtonEventArgs e)
+        {
+            Program.gameEvent = Program.GameEvent.Next;
+        }
+
+        private void DifficultyButton_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (e.Button == Mouse.Button.Right)
+                difficulty--;
+            else
+                difficulty++;
+            difficulty = difficulty < 1 ? 1 : difficulty;
+            difficultyButton.Content = $"Difficulty: {difficulty}";
+        }
+
+        public override void Delete()
+        {
+            foreach (var part in parts)
+            {
+                part.Delete();
+                if(part is GuiButton)
+                {
+                    Program.objects.Remove(part);
+                }
+            }
+            base.Delete();
+        }
+
     }
 
     class MenuGUI : GUI
@@ -76,7 +209,7 @@ namespace TrySFML2
             Program.objects.Add(item);
         }
 
-        public override void OnClick(int x, int y)
+        public override void OnClick(int x, int y, Mouse.Button button)
         {
             GUI clicked = Program.GetEntityAt(x, y, parts.Select(p => p as Entity).ToList()) as GUI;
 
@@ -119,7 +252,7 @@ namespace TrySFML2
 
                     break;
             }
-            base.OnClick(x, y);
+            base.OnClick(x, y, button);
         }
 
         public override Shape Update(double timeDiff)
