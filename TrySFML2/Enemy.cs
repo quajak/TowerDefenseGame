@@ -6,6 +6,7 @@ namespace TrySFML2
     class Enemy : Entity
     {
         int size;
+        bool colorSet = false;
         public float DistanceToGoal
         {
             get
@@ -28,7 +29,10 @@ namespace TrySFML2
                     var s = shape as RectangleShape;
                     s.Size = new Vector2f(size * 5, size * 5);
                     shape = s;
-                    shape.FillColor = new Color((byte)Program.random.Next(255), (byte)Program.random.Next(255), (byte)Program.random.Next(255));
+                    if (!colorSet)
+                    {
+                        shape.FillColor = new Color((byte)Program.random.Next(255), (byte)Program.random.Next(255), (byte)Program.random.Next(255));
+                    }
                 }
             }
         }
@@ -55,6 +59,12 @@ namespace TrySFML2
             Collides.Add(typeof(MainBase));
             Collides.Add(typeof(Lazor));
             Collides.Add(typeof(Bomb));
+        }
+
+        public Enemy(int aX, int aY, Color color, int size = 1) : this(aX, aY, size)
+        {
+            colorSet = true;
+            shape.FillColor = color;
         }
 
         public override void Collision(Entity collided)

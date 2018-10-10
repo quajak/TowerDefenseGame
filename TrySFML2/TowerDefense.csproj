@@ -82,6 +82,7 @@
     <Compile Include="E.cs" />
     <Compile Include="Enemy.cs" />
     <Compile Include="Entity.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="GUI.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

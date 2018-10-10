@@ -23,6 +23,9 @@ namespace TrySFML2
         public static List<Shape> shapes = new List<Shape>(); //keep for debug reasons
         public static List<Text> texts = new List<Text>();
 
+        public static List<string> ConsoleLines = new List<string>();
+        public static string userInput = "";
+
         public static Random random = new Random();
 
         public static Vector2u gameSize;
@@ -42,7 +45,13 @@ namespace TrySFML2
 
         static float baseEvolutionFactor = 1f;
 
-        public static float EvolutionFactor {
+        static int bossSize = 5;
+        static float timeBetweenBosses = 60_000;
+        static float timePassed = 0;
+        static float lastTimePlayed = 0;
+
+        public static float EvolutionFactor
+        {
             get
             {
                 return baseEvolutionFactor * Math.Max(1f, (float)Math.Log10(EnemiesKilled + 1)) * Math.Max(1f, timePlayed / 60000f); //60 Sekunden bevor die Enemies wegen der Zeit rampen
@@ -108,7 +117,7 @@ namespace TrySFML2
                 }
                 window.Display();
                 Thread.Sleep(10);
-                if(gameEvent == GameEvent.Next)
+                if (gameEvent == GameEvent.Next)
                 {
                     mainMenu.Delete();
                     objects.Remove(mainMenu);
@@ -135,32 +144,105 @@ namespace TrySFML2
             };
 
             //Start enemy spawner
-            Timer timer = new Timer((x) => {
-                if(!MainBase.Available && !GameEnded)
+            Timer timer = new Timer((x) =>
+            {
+                // the spawning rate oscialltes on a 60 second period - we shift the return valie of sin to always be above 0
+                int num = 0;
+                if (!MainBase.Available && !GameEnded)
+                {
                     lock (toChange)
-                    lock (playerBuildings) // cam this cause a deadlock? Maybe - most likely not
-                    {
-                        int num = random.Next(3 + (int)EvolutionFactor);
-                        for (int i = 0; i < num; i++)
+                        lock (playerBuildings) // cam this cause a deadlock? Maybe - most likely not
                         {
-                            int eSize = random.Next(1, (int)EvolutionFactor);
-                            int tries = 0;
-                            while (tries++ < 100) // So we dont get stuck for ever
+                            #region Spawn Regular Enemies
+
+                            float val2 = 1.2f * (float)(Math.Sin((timePlayed / 1000) % 30f / 30f * 2f * (float)Math.PI) + 1f); //Modify the multiplier until it works well
+                            num = random.Next(1 + Math.Max(1, (int)(EvolutionFactor * val2)));
+                            for (int i = 0; i < num; i++)
                             {
-                                int posX = random.Next((int)gameSize.X);
-                                int posY = random.Next((int)gameSize.Y);
-                                var leastDistance = playerBuildings.Select(b => b.position).Select(p => E.Distance(p, new Vector2f(posX, posY))).Min();
-                                if(leastDistance > 100) // TOOO: different towers have different regions of effect
+                                int eSize = random.Next(1, (int)EvolutionFactor);
+                                int tries = 0;
+                                bool spawnInField = false; //We normally spawn the enemies at the borders for a cooler effect but if you want to play with them spawning everywhere set this to true
+                                if (spawnInField)
                                 {
+                                    while (tries++ < 100) // So we dont get stuck for ever
+                                    {
+                                        int posX = random.Next((int)gameSize.X);
+                                        int posY = random.Next((int)gameSize.Y);
+                                        var leastDistance = playerBuildings.Select(b => b.position).Select(p => E.Distance(p, new Vector2f(posX, posY))).Min();
+                                        if (leastDistance > 100) // TOOO: different towers have different regions of effect
+                                        {
+                                            Enemy item1 = new Enemy(posX, posY, eSize);
+                                            enemies.Add(item1);
+                                            toChange.Add(item1);
+                                            break;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    //We spawn on the border
+                                    int posX = 0;
+                                    int posY = 0;
+                                    if (random.NextBool())
+                                    {
+                                        //spawn on x border
+                                        posX = random.NextBool() ? 0 : (int)gameSize.X;
+                                        posY = random.Next((int)gameSize.Y);
+                                    }
+                                    else
+                                    {
+                                        //spawn on y border
+                                        posX = random.Next((int)gameSize.X);
+                                        posY = random.NextBool() ? 0 : (int)gameSize.Y;
+
+                                    }
                                     Enemy item1 = new Enemy(posX, posY, eSize);
                                     enemies.Add(item1);
                                     toChange.Add(item1);
-                                    break;
                                 }
                             }
-                        }
-                    }
-                Console.WriteLine($"Debug at {timePlayed / 1000} - Enemies: {enemies.Count} - Killed: {EnemiesKilled} - Total Entities: {objects.Count} - Evolution Factor: {EvolutionFactorString}");
+                            #endregion
+
+                            #region Spawn Boss
+
+                            //Spawn boss every 60s
+                            timePassed += timePlayed - lastTimePlayed;
+                            lastTimePlayed = timePlayed;
+                            if(timePassed > timeBetweenBosses)
+                            {
+                                timePassed = 0;
+                                Console.WriteLine($"Spawning boss! Size {bossSize}");
+                                //Spawn boss at random location on field
+
+                                int tries = 0;
+                                while (tries++ < 100) // So we dont get stuck for ever
+                                {
+                                    int posX = random.Next((int)gameSize.X);
+                                    int posY = random.Next((int)gameSize.Y);
+                                    var leastDistance = playerBuildings.Select(b => b.position).Select(p => E.Distance(p, new Vector2f(posX, posY))).Min();
+                                    if (leastDistance > 100) // TOOO: different towers have different regions of effect
+                                    {
+                                        Enemy boss = new Enemy(posX, posY, new Color(0, 0, 0), bossSize);
+                                        enemies.Add(boss);
+                                        toChange.Add(boss);
+                                        //Spawn minions close to the boss
+                                        for (int i = 1; i < bossSize; i++)
+                                        {
+                                            int spread = 16;
+                                            Enemy item1 = new Enemy(posX + random.Next(bossSize * spread) - bossSize * spread / 2, posY + random.Next(bossSize * spread) - bossSize * spread / 2, new Color(0, 0, 0), i);
+                                            enemies.Add(item1);
+                                            toChange.Add(item1);
+                                        }
+                                        bossSize += 3;
+                                        break;
+                                    }
+                                }
+
+                            }
+                            #endregion
+                            }
+                }
+                Console.WriteLine($"Debug at {timePlayed / 1000} - Enemies: {enemies.Count} + {num}- Killed: {EnemiesKilled} - Total Entities: {objects.Count} - Evolution Factor: {EvolutionFactorString}");
             }, null, 1000, 1000);
 
             int frameLength = 100; // When two few frames are used, the fluctuations make it unreadable
@@ -231,7 +313,7 @@ namespace TrySFML2
                 int fps = 0;
                 for (int i = 0; i < frames.Length; i++)
                 {
-                    fps = (fps + frames[i])/2;
+                    fps = (fps + frames[i]) / 2;
                 }
                 c++;
                 c %= frameLength;
@@ -243,6 +325,7 @@ namespace TrySFML2
                 window.Draw(evolutionFactorText);
                 window.Draw(moneyText);
 
+                //Update console
 
                 window.Display();
                 if (GameEnded)
@@ -298,7 +381,7 @@ namespace TrySFML2
 
         public static bool IsFree(float x, float y, float radius)
         {
-            Entity entity = new Entity(x - radius/ 2, y - radius/ 2, new CircleShape(radius));
+            Entity entity = new Entity(x - radius / 2, y - radius / 2, new CircleShape(radius));
             foreach (var en in objects)
             {
                 if (PolygonCollision(en, entity))
@@ -312,7 +395,7 @@ namespace TrySFML2
             list = list.OrderBy(l => l.clickLayer).ToList();
             foreach (var item in list)
             {
-                if(item.shape is RectangleShape rectangleShape)
+                if (item.shape is RectangleShape rectangleShape)
                 {
                     if (((item.position.X <= X) && (item.position.X + rectangleShape.Size.X > X)) && (item.position.Y <= Y && item.position.Y + rectangleShape.Size.Y > Y))
                     {
@@ -321,9 +404,10 @@ namespace TrySFML2
                             return item;
                         }
                     }
-                } else if(item.shape is CircleShape circleShape)
+                }
+                else if (item.shape is CircleShape circleShape)
                 {
-                    if(circleShape.Radius > E.Distance(new Vector2f(X,Y), item.position))
+                    if (circleShape.Radius > E.Distance(new Vector2f(X, Y), item.position))
                     {
                         if (!(item is GUI g) || g.shown)
                         {
@@ -343,8 +427,8 @@ namespace TrySFML2
             {
                 if (ToCreate != null && (!(ToCreate is MachineGun) || MachineGun.Available))
                 {
-                    if(ToCreate.cost <= money && IsFree(e.X, e.Y, ToCreate.shape))
-                    { 
+                    if (ToCreate.cost <= money && IsFree(e.X, e.Y, ToCreate.shape))
+                    {
                         Entity item = ToCreate.Create(e.X - 5, e.Y - 5);
                         lock (playerBuildings)
                         {
@@ -361,7 +445,7 @@ namespace TrySFML2
         }
 
         private static void Window_LostFocus(object sender, EventArgs e)
-        { 
+        {
         }
 
         private static void Window_GainedFocus(object sender, EventArgs e)
