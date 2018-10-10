@@ -26,6 +26,7 @@ namespace TrySFML2
         public bool shown = true;
         public GUI(float x, float y, float width, float height) : base(x,y,new RectangleShape(new Vector2f(width, height)))
         {
+            blocking = true;
             clickLayer = 10;
         }
 
@@ -210,6 +211,12 @@ namespace TrySFML2
             item = new GUIField(20, 260, 60, 60, Color.Black, "Bomb");
             parts.Add(item);
             Program.objects.Add(item);
+            item = new GUIField(20, 340, 60, 60, Color.Yellow, "Bank");
+            parts.Add(item);
+            Program.objects.Add(item);
+            item = new GUIField(20, 420, 60, 60, new Color(66, 244, 241), "IceTower");
+            parts.Add(item);
+            Program.objects.Add(item);
         }
 
         public override void OnClick(int x, int y, Mouse.Button button)
@@ -243,6 +250,14 @@ namespace TrySFML2
                         case "Bomb":
                             if (Bomb.Available)
                                 Program.ToCreate = new Bomb(x, y);
+                            break;
+                        case "Bank":
+                            if (BankTower.Available)
+                                Program.ToCreate = new BankTower(x, y);
+                            break;
+                        case "IceTower":
+                            if (IceTower.Available)
+                                Program.ToCreate = new IceTower(x, y);
                             break;
                         default:
                             break;
@@ -282,6 +297,16 @@ namespace TrySFML2
             s = parts.Find(p => p.name == "Bomb").shape;
             color = s.FillColor;
             color.A = Bomb.Available ? (byte)255 : (byte)100;
+            s.FillColor = color;
+
+            s = parts.Find(p => p.name == "Bank").shape;
+            color = s.FillColor;
+            color.A = BankTower.Available ? (byte)255 : (byte)100;
+            s.FillColor = color;
+
+            s = parts.Find(p => p.name == "IceTower").shape;
+            color = s.FillColor;
+            color.A = IceTower.Available ? (byte)255 : (byte)100;
             s.FillColor = color;
 
             return base.Update(timeDiff);

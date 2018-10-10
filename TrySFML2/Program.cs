@@ -151,19 +151,71 @@ namespace TrySFML2
                 if (!MainBase.Available && !GameEnded)
                 {
                     lock (toChange)
-                        lock (playerBuildings) // cam this cause a deadlock? Maybe - most likely not
-                        {
-                            #region Spawn Regular Enemies
-
-                            float val2 = 1.2f * (float)(Math.Sin((timePlayed / 1000) % 30f / 30f * 2f * (float)Math.PI) + 1f); //Modify the multiplier until it works well
-                            num = random.Next(1 + Math.Max(1, (int)(EvolutionFactor * val2)));
-                            for (int i = 0; i < num; i++)
+                        lock (enemies)
+                            lock (playerBuildings) // cam this cause a deadlock? Maybe - most likely not
                             {
-                                int eSize = random.Next(1, (int)EvolutionFactor);
-                                int tries = 0;
-                                bool spawnInField = false; //We normally spawn the enemies at the borders for a cooler effect but if you want to play with them spawning everywhere set this to true
-                                if (spawnInField)
+                                #region Spawn Regular Enemies
+
+                                float val2 = 1.2f * (float)(Math.Sin((timePlayed / 1000) % 30f / 30f * 2f * (float)Math.PI) + 1f); //Modify the multiplier until it works well
+                                num = random.Next(1 + Math.Max(1, (int)(EvolutionFactor * val2)));
+                                for (int i = 0; i < num; i++)
                                 {
+                                    int eSize = random.Next(1, (int)EvolutionFactor);
+                                    int tries = 0;
+                                    bool spawnInField = false; //We normally spawn the enemies at the borders for a cooler effect but if you want to play with them spawning everywhere set this to true
+                                    if (spawnInField)
+                                    {
+                                        while (tries++ < 100) // So we dont get stuck for ever
+                                        {
+                                            int posX = random.Next((int)gameSize.X);
+                                            int posY = random.Next((int)gameSize.Y);
+                                            var leastDistance = playerBuildings.Select(b => b.position).Select(p => E.Distance(p, new Vector2f(posX, posY))).Min();
+                                            if (leastDistance > 100) // TOOO: different towers have different regions of effect
+                                            {
+                                                Enemy item1 = new Enemy(posX, posY, eSize);
+                                                enemies.Add(item1);
+                                                toChange.Add(item1);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        //We spawn on the border
+                                        int posX = 0;
+                                        int posY = 0;
+                                        if (random.NextBool())
+                                        {
+                                            //spawn on x border
+                                            posX = random.NextBool() ? 0 : (int)gameSize.X;
+                                            posY = random.Next((int)gameSize.Y);
+                                        }
+                                        else
+                                        {
+                                            //spawn on y border
+                                            posX = random.Next((int)gameSize.X);
+                                            posY = random.NextBool() ? 0 : (int)gameSize.Y;
+
+                                        }
+                                        Enemy item1 = new Enemy(posX, posY, eSize);
+                                        enemies.Add(item1);
+                                        toChange.Add(item1);
+                                    }
+                                }
+                                #endregion
+
+                                #region Spawn Boss
+
+                                //Spawn boss every 60s
+                                timePassed += timePlayed - lastTimePlayed;
+                                lastTimePlayed = timePlayed;
+                                if (timePassed > timeBetweenBosses)
+                                {
+                                    timePassed = 0;
+                                    Console.WriteLine($"Spawning boss! Size {bossSize}");
+                                    //Spawn boss at random location on field
+
+                                    int tries = 0;
                                     while (tries++ < 100) // So we dont get stuck for ever
                                     {
                                         int posX = random.Next((int)gameSize.X);
@@ -171,75 +223,24 @@ namespace TrySFML2
                                         var leastDistance = playerBuildings.Select(b => b.position).Select(p => E.Distance(p, new Vector2f(posX, posY))).Min();
                                         if (leastDistance > 100) // TOOO: different towers have different regions of effect
                                         {
-                                            Enemy item1 = new Enemy(posX, posY, eSize);
-                                            enemies.Add(item1);
-                                            toChange.Add(item1);
+                                            Enemy boss = new Enemy(posX, posY, new Color(0, 0, 0), bossSize);
+                                            enemies.Add(boss);
+                                            toChange.Add(boss);
+                                            //Spawn minions close to the boss
+                                            for (int i = 1; i < bossSize; i++)
+                                            {
+                                                int spread = 16;
+                                                Enemy item1 = new Enemy(posX + random.Next(bossSize * spread) - bossSize * spread / 2, posY + random.Next(bossSize * spread) - bossSize * spread / 2, new Color(0, 0, 0), i);
+                                                enemies.Add(item1);
+                                                toChange.Add(item1);
+                                            }
+                                            bossSize += 3;
                                             break;
                                         }
                                     }
+
                                 }
-                                else
-                                {
-                                    //We spawn on the border
-                                    int posX = 0;
-                                    int posY = 0;
-                                    if (random.NextBool())
-                                    {
-                                        //spawn on x border
-                                        posX = random.NextBool() ? 0 : (int)gameSize.X;
-                                        posY = random.Next((int)gameSize.Y);
-                                    }
-                                    else
-                                    {
-                                        //spawn on y border
-                                        posX = random.Next((int)gameSize.X);
-                                        posY = random.NextBool() ? 0 : (int)gameSize.Y;
-
-                                    }
-                                    Enemy item1 = new Enemy(posX, posY, eSize);
-                                    enemies.Add(item1);
-                                    toChange.Add(item1);
-                                }
-                            }
-                            #endregion
-
-                            #region Spawn Boss
-
-                            //Spawn boss every 60s
-                            timePassed += timePlayed - lastTimePlayed;
-                            lastTimePlayed = timePlayed;
-                            if(timePassed > timeBetweenBosses)
-                            {
-                                timePassed = 0;
-                                Console.WriteLine($"Spawning boss! Size {bossSize}");
-                                //Spawn boss at random location on field
-
-                                int tries = 0;
-                                while (tries++ < 100) // So we dont get stuck for ever
-                                {
-                                    int posX = random.Next((int)gameSize.X);
-                                    int posY = random.Next((int)gameSize.Y);
-                                    var leastDistance = playerBuildings.Select(b => b.position).Select(p => E.Distance(p, new Vector2f(posX, posY))).Min();
-                                    if (leastDistance > 100) // TOOO: different towers have different regions of effect
-                                    {
-                                        Enemy boss = new Enemy(posX, posY, new Color(0, 0, 0), bossSize);
-                                        enemies.Add(boss);
-                                        toChange.Add(boss);
-                                        //Spawn minions close to the boss
-                                        for (int i = 1; i < bossSize; i++)
-                                        {
-                                            int spread = 16;
-                                            Enemy item1 = new Enemy(posX + random.Next(bossSize * spread) - bossSize * spread / 2, posY + random.Next(bossSize * spread) - bossSize * spread / 2, new Color(0, 0, 0), i);
-                                            enemies.Add(item1);
-                                            toChange.Add(item1);
-                                        }
-                                        bossSize += 3;
-                                        break;
-                                    }
-                                }
-
-                            }
-                            #endregion
+                                #endregion
                             }
                 }
                 Console.WriteLine($"Debug at {timePlayed / 1000} - Enemies: {enemies.Count} + {num}- Killed: {EnemiesKilled} - Total Entities: {objects.Count} - Evolution Factor: {EvolutionFactorString}");
@@ -373,7 +374,7 @@ namespace TrySFML2
             Entity entity = new Entity(X - Width / 2, Y - Height / 2, new RectangleShape(new Vector2f(Width, Height)));
             foreach (var en in objects)
             {
-                if (PolygonCollision(en, entity))
+                if (en.blocking && PolygonCollision(en, entity))
                     return false;
             }
             return true;
@@ -384,7 +385,7 @@ namespace TrySFML2
             Entity entity = new Entity(x - radius / 2, y - radius / 2, new CircleShape(radius));
             foreach (var en in objects)
             {
-                if (PolygonCollision(en, entity))
+                if (en.blocking && PolygonCollision(en, entity))
                     return false;
             }
             return true;
@@ -421,7 +422,7 @@ namespace TrySFML2
 
         private static void Window_MouseButtonPressed(object sender, MouseButtonEventArgs e)
         {
-            var clicked = GetEntityAt(e.X, e.Y, objects);
+            var clicked = GetEntityAt(e.X, e.Y, objects.Where(o => o.blocking).ToList());
 
             if (clicked is null)
             {

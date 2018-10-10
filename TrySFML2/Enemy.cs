@@ -5,8 +5,11 @@ namespace TrySFML2
 {
     class Enemy : Entity
     {
+        Stat vX;
+        Stat vY;
         int size;
         bool colorSet = false;
+        Stat speed;
         public float DistanceToGoal
         {
             get
@@ -24,7 +27,7 @@ namespace TrySFML2
             get => size; set
             {
                 size = value;
-                if(size != 0)
+                if (size != 0)
                 {
                     var s = shape as RectangleShape;
                     s.Size = new Vector2f(size * 5, size * 5);
@@ -37,23 +40,67 @@ namespace TrySFML2
             }
         }
 
+        internal Stat VX
+        {
+            get => vX; set
+            {
+                vX = value;
+                if (speed != null && vY != null)
+                {
+                    float s = E.Scale(value.baseValue, vY.Value, Speed.Value);
+                    vY.baseValue = value.baseValue * s;
+                    vX.baseValue = vX.baseValue * s;
+                    velocity = new Vector2f(vX.Value, vY.Value);
+                }
+            }
+        }
+        internal Stat VY
+        {
+            get => vY; set
+            {
+                vY = value;
+                if (speed != null && vX != null)
+                {
+                    float s = E.Scale(vY.baseValue, value.baseValue, Speed.Value);
+                    vY.baseValue = value.baseValue * s;
+                    vX.baseValue = vX.baseValue * s;
+                    velocity = new Vector2f(vX.Value, vY.Value);
+                }
+            }
+        }
+
+        internal Stat Speed
+        {
+            get => speed; set
+            {
+                speed = value;
+                if (vX != null && vY != null)
+                {
+                    float s = E.Scale(vX.baseValue, vY.Value, speed.Value);
+                    vY.baseValue = vY.baseValue * s;
+                    vX.baseValue = vX.baseValue * s;
+                    velocity = new Vector2f(vX.Value, vY.Value);
+                }
+            }
+        }
+
         public Enemy(int aX, int aY, int size = 1) : base(aX, aY, new RectangleShape(new Vector2f(5, 5)))
         {
-            float vX;
-            float vY;
             if (Program.mainBase is null)
             {
-                vX = (float)Program.random.NextDouble() - 0.5f;
-                vY = (float)Program.random.NextDouble() - 0.5f;
+                VX = new Stat((float)Program.random.NextDouble() - 0.5f);
+                VY = new Stat((float)Program.random.NextDouble() - 0.5f);
             }
             else
             {
-                vX = Program.mainBase.position.X - aX;
-                vY = Program.mainBase.position.Y - aY;
+                VX = new Stat(Program.mainBase.position.X - aX);
+                VY = new Stat(Program.mainBase.position.Y - aY);
             }
-            float speed = 20 * Program.EvolutionFactor;
-            float s = E.Scale(vX, vY, speed);
-            velocity = new Vector2f(s * vX, s * vY);
+            Speed = new Stat(20 * Program.EvolutionFactor);
+            float s = E.Scale(VX.Value, VY.Value, Speed.Value);
+            VX.baseValue *= s;
+            VY.baseValue *= s;
+            velocity = new Vector2f(VX.Value, VY.Value);
             Size = size;
             Collides.Add(typeof(Bullet));
             Collides.Add(typeof(MainBase));
@@ -95,7 +142,7 @@ namespace TrySFML2
         public void Pop(int amount = 1)
         {
             Size -= amount;
-            if(size == 0)
+            if (size == 0)
             {
                 lock (Program.toChange)
                 {
@@ -108,7 +155,7 @@ namespace TrySFML2
 
         public override Shape Update(double timeDiff)
         {
-            if((position.X < 0 || position.X > Program.gameSize.X) || ( position.Y < 0 || position.Y > Program.gameSize.Y))
+            if ((position.X < 0 || position.X > Program.gameSize.X) || (position.Y < 0 || position.Y > Program.gameSize.Y))
             {
                 Program.toChange.Add(this);
                 Program.enemies.Remove(this);

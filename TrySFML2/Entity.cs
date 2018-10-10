@@ -57,6 +57,7 @@ namespace TrySFML2
         public List<Type> Collides = new List<Type>();
         public int clickLayer = 100;
         public int renderLayer = 100;
+        public bool blocking = false;
 
         public Entity(float aX, float aY, Shape aShape)
         {
@@ -105,27 +106,6 @@ namespace TrySFML2
         virtual public Entity Create(int x,int y)
         {
             throw new NotImplementedException();
-        }
-    }
-
-    class ExpandingCircle : Entity
-    {
-        private readonly int endSize;
-
-        public ExpandingCircle(int aX, int aY, int intialSize, int endSize) : base(aX, aY, new CircleShape(intialSize))
-        {
-            this.endSize = endSize;
-        }
-
-        public override Shape Update(double timeDiff)
-        {
-            CircleShape circle = (shape as CircleShape);
-            circle.Radius += 1;
-            position.X -= 1; 
-            position.Y -= 1;
-            if (circle.Radius > endSize)
-                Program.toChange.Add(this);
-            return base.Update(timeDiff);
         }
     }
 }

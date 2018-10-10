@@ -57,19 +57,115 @@ namespace TrySFML2
         public Tower(float ax, float ay, Shape shape, int cost) : base(ax, ay, shape)
         {
             this.cost = cost;
+            blocking = true;
+        }
+    }
+
+    class BankTower : Tower
+    {
+        static int _cost = 20;
+
+        public BankTower(float x, float y, bool buy = false) : base(x, y, new RectangleShape(new Vector2f(15, 15)), _cost)
+        {
+            if (buy)
+                Program.Money -= cost;
+            shape.FillColor = Color.Yellow;
+        }
+
+        public static bool Available
+        {
+            get
+            {
+                return Program.Money >= _cost && !MainBase.Available;
+            }
+        }
+
+        public override Entity Create(int x, int y)
+        {
+            return new BankTower(x, y, true);
+        }
+
+        static float maxMoneyTime = 3_000;
+        float moneyTime = 0;
+        static int money = 1;
+        public override Shape Update(double timeDiff)
+        {
+            moneyTime += (float)timeDiff;
+            if (moneyTime > maxMoneyTime)
+            {
+                Program.Money += money;
+                moneyTime = 0;
+            }
+            return base.Update(timeDiff);
+        }
+    }
+
+    class IceTower : Tower
+    {
+        static int _cost = 15;
+
+        public IceTower(float x, float y, bool buy = false) : base(x, y, new CircleShape(10f), _cost)
+        {
+            if (buy)
+                Program.Money -= cost;
+            shape.FillColor = new Color(66, 244, 241);
+        }
+
+        public static bool Available
+        {
+            get
+            {
+                return Program.Money >= _cost && !MainBase.Available;
+            }
+        }
+
+        public override Entity Create(int x, int y)
+        {
+            return new IceTower(x, y, true);
+        }
+
+        static float range = 150;
+        List<Enemy> affected = new List<Enemy>();
+        Modifier slowDown = new Modifier(ModifierType.Percentage, -30);
+        public override Shape Update(double timeDiff)
+        {
+            lock (Program.enemies)
+            {
+
+                foreach (var enemy in Program.enemies)
+                {
+                    if (!affected.Contains(enemy) && E.Distance(enemy, this) < range)
+                    {
+                        Enemy item = enemy as Enemy;
+                        Stat speed = item.Speed;
+                        speed.modifiers.Add(slowDown);
+                        item.Speed = speed;
+                        affected.Add(item);
+                    }
+                }
+            }
+            foreach (var enemy in affected)
+            {
+                if (E.Distance(enemy, this) > range)
+                    enemy.Speed.modifiers.Remove(slowDown);
+            }
+            return base.Update(timeDiff);
         }
     }
 
     class Bomb : Tower
     {
-        static int _cost = 3;
+        static int _cost = 1;
         static float maxRadius = 30;
         float radius = 1;
         float growth = 0.03f;
         float timeAtMax = 0;
         static float maxTimeAtMax = 800; //In milliseconds
-        public Bomb(float x, float y) : base(x, y, new CircleShape(3), _cost)
+        public Bomb(float x, float y, bool buy = false) : base(x, y, new CircleShape(3), _cost)
         {
+            renderLayer = 90; // Cheap hack so that the lazor is below the tower
+            if (buy)
+                Program.Money -= cost;
             shape.FillColor = Color.Black;
         }
 
@@ -83,7 +179,7 @@ namespace TrySFML2
 
         public override Entity Create(int x, int y)
         {
-            return new Bomb(x, y);
+            return new Bomb(x, y, true);
         }
 
         public override Shape Update(double timeDiff)
