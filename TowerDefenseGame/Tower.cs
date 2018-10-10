@@ -28,7 +28,7 @@ namespace TrySFML2
             }
             if (instances == 1)
                 Program.ToCreate = new MachineGun(0, 0);
-            shape.FillColor = Color.Red;
+            shape.Texture = new Texture("./Resources/mainBase.jpg");
         }
 
         public override Entity Create(int x, int y)
@@ -65,11 +65,11 @@ namespace TrySFML2
     {
         static int _cost = 20;
 
-        public BankTower(float x, float y, bool buy = false) : base(x, y, new RectangleShape(new Vector2f(15, 15)), _cost)
+        public BankTower(float x, float y, bool buy = false) : base(x, y, new RectangleShape(new Vector2f(25, 25)), _cost)
         {
             if (buy)
                 Program.Money -= cost;
-            shape.FillColor = Color.Yellow;
+            shape.Texture = new Texture("./Resources/BankTower.png");
         }
 
         public static bool Available
@@ -87,13 +87,12 @@ namespace TrySFML2
 
         static float maxMoneyTime = 3_000;
         float moneyTime = 0;
-        static int money = 1;
         public override Shape Update(double timeDiff)
         {
             moneyTime += (float)timeDiff;
             if (moneyTime > maxMoneyTime)
             {
-                Program.Money += money;
+                Program.Money += Program.moneyRate;
                 moneyTime = 0;
             }
             return base.Update(timeDiff);
@@ -108,7 +107,7 @@ namespace TrySFML2
         {
             if (buy)
                 Program.Money -= cost;
-            shape.FillColor = new Color(66, 244, 241);
+            shape.Texture = new Texture("./Resources/IceTower.png");
         }
 
         public static bool Available
@@ -126,7 +125,7 @@ namespace TrySFML2
 
         static float range = 150;
         List<Enemy> affected = new List<Enemy>();
-        Modifier slowDown = new Modifier(ModifierType.Percentage, -30);
+        Modifier slowDown = new Modifier(ModifierType.Percentage, -40);
         public override Shape Update(double timeDiff)
         {
             lock (Program.enemies)
@@ -216,12 +215,13 @@ namespace TrySFML2
         double attackTime = 0;
         double maxAttackTime = 2500;
 
-        public LazorGun(int aX, int aY, bool buy = false) : base(aX, aY, new RectangleShape(new Vector2f(10, 10)), _cost)
+        public LazorGun(int aX, int aY, bool buy = false) : base(aX, aY, new RectangleShape(new Vector2f(20, 20)), _cost)
         {
             renderLayer = 90; // Cheap hack so that the lazor is below the tower
             if (buy)
                 Program.Money -= cost;
-            shape.FillColor = Color.Green;
+            shape.Origin = new Vector2f(5, 5);
+            shape.Texture = new Texture("./Resources/LazorGun.png");
         }
 
         override public Entity Create(int x, int y)
@@ -245,10 +245,11 @@ namespace TrySFML2
                         {
                             Entity item = list[0];
                             //Generate bullet
-                            float dX = item.position.X - (position.X + 5);
-                            float dY = item.position.Y - (position.Y + 5);
+                            float dX = item.position.X - position.X;
+                            float dY = item.position.Y - position.Y;
                             float angle = (float)Math.Atan2(dY, dX) / (float)Math.PI * 180f;
-                            Program.toChange.Add(new Lazor(position.X + 5, position.Y + 5, 600, 2, angle));
+                            shape.Rotation = angle - 90f;
+                            Program.toChange.Add(new Lazor(position.X, position.Y, 600, 2, angle));
                         }
                     }
             }
@@ -286,11 +287,12 @@ namespace TrySFML2
         double attackTime = 0;
         double maxAttackTime = 180;
 
-        public MachineGun(int aX, int aY, bool buy = false) : base(aX, aY, new RectangleShape(new Vector2f(10, 10)), _cost)
+        public MachineGun(int aX, int aY, bool buy = false) : base(aX, aY, new RectangleShape(new Vector2f(20, 20)), _cost)
         {
+            shape.Origin = new Vector2f(5, 5);
             if (buy)
                 Program.Money -= cost;
-            shape.FillColor = Color.Cyan;
+            shape.Texture = new Texture("./Resources/MachineGun.png");
         }
 
         override public Entity Create(int x, int y)
@@ -314,11 +316,14 @@ namespace TrySFML2
                         {
                             Entity item = list[0];
                             //Generate bullet
-                            float dX = item.position.X - (position.X + Program.random.Next(10) - 5);
+                            var size = (shape as RectangleShape).Size;
+                            float dX = item.position.X  - (position.X + Program.random.Next(10) - 5);
                             float dY = item.position.Y - (position.Y + Program.random.Next(10) - 5);
                             float vX = dX / Math.Max(Math.Abs(dX), Math.Abs(dY)) + (float)(Program.random.NextDouble() - 0.5d) / 4f;
                             float vY = dY / Math.Max(Math.Abs(dX), Math.Abs(dY)) + (float)(Program.random.NextDouble() - 0.5d) / 4f;
                             float scale = E.Scale(vX, vY, 1300);
+                            //Rotate the gun
+                            shape.Rotation = (float)Math.Atan2(vY, vX) / (2f * (float)Math.PI) * 360f - 90f;
                             Program.toChange.Add(new Bullet(position.X, position.Y, vX * scale, vY * scale, 1300));
                         }
                     }

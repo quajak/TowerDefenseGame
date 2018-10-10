@@ -195,26 +195,31 @@ namespace TrySFML2
         {
             clickLayer = 1;
             renderLayer = 10;
-            shape.FillColor = new Color(255, 255, 255, 200);
+            shape.FillColor = new Color(110, 114, 114, 200);
             GUIField item = new GUIField(80, 0, 20, 20, Color.Red, "Hide");
             parts.Add(item);
             Program.objects.Add(item);
-            item = new GUIField(20, 20, 60, 60, Color.Red, "Controller");
+            item = new GUIField(20, 20, 60, 60, Color.White, "Controller");
+            item.shape.Texture = new Texture("./Resources/mainBase.jpg"); ;
             parts.Add(item);
             Program.objects.Add(item);
-            item = new GUIField(20, 100, 60, 60, Color.Cyan, "MachineGun");
+            item = new GUIField(20, 100, 60, 60, Color.White, "MachineGun");
+            item.shape.Texture = new Texture("./Resources/MachineGun.png");
             parts.Add(item);
             Program.objects.Add(item);
-            item = new GUIField(20, 180, 60, 60, Color.Green, "LazorGun");
+            item = new GUIField(20, 180, 60, 60, Color.White, "LazorGun");
+            item.shape.Texture = new Texture("./Resources/LazorGun.png");
             parts.Add(item);
             Program.objects.Add(item);
             item = new GUIField(20, 260, 60, 60, Color.Black, "Bomb");
             parts.Add(item);
             Program.objects.Add(item);
-            item = new GUIField(20, 340, 60, 60, Color.Yellow, "Bank");
+            item = new GUIField(20, 340, 60, 60, Color.White, "Bank");
+            item.shape.Texture = new Texture("./Resources/BankTower.png");
             parts.Add(item);
             Program.objects.Add(item);
-            item = new GUIField(20, 420, 60, 60, new Color(66, 244, 241), "IceTower");
+            item = new GUIField(20, 420, 60, 60, Color.White, "IceTower");
+            item.shape.Texture = new Texture("./Resources/IceTower.png");
             parts.Add(item);
             Program.objects.Add(item);
         }
