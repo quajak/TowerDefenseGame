@@ -96,7 +96,6 @@ namespace TrySFML2
             while (window.IsOpen) //Pre game loop
             {
                 window.DispatchEvents(); // Here all event handlers are called
-                window.Clear(Color.Black);
 
                 //Start rendering + entity updates
                 window.Clear(Color.Blue);
@@ -250,6 +249,12 @@ namespace TrySFML2
             int[] frames = new int[frameLength];
             int c = 0;
             DateTime dateTime = DateTime.Now;
+
+            //Setup background graphics
+            Sprite background = new Sprite(new Texture("./Resources/background.png"));
+            background.Texture.Repeated = true;
+            background.TextureRect = new IntRect(0, 0, (int)gameSize.X, (int)gameSize.Y);
+
             while (window.IsOpen) // Main game loop
             {
                 window.DispatchEvents(); // Here all event handlers are called
@@ -268,6 +273,8 @@ namespace TrySFML2
 
                 //Start rendering + entity updates
                 window.Clear(Color.Blue);
+
+                window.Draw(background);
                 objects = objects.OrderByDescending(o => o.renderLayer).ToList();
                 for (int i = 0; i < objects.Count; i++)
                 {
@@ -347,6 +354,7 @@ namespace TrySFML2
                 Thread.Sleep(10);
                 window.DispatchEvents();
                 window.Clear(Color.Blue);
+                window.Draw(background);
                 for (int i = 0; i < objects.Count; i++)
                 {
                     Entity item = objects[i];

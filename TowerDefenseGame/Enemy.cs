@@ -30,7 +30,7 @@ namespace TrySFML2
                 if (size != 0)
                 {
                     var s = shape as RectangleShape;
-                    s.Size = new Vector2f(size * 5, size * 5);
+                    s.Size = new Vector2f(size * 2 + 5, size * 2 + 5);
                     shape = s;
                     if (!colorSet)
                     {

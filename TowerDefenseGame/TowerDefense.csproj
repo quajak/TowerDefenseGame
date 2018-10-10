@@ -112,6 +112,15 @@
     <Content Include="lib\sfmlnet-graphics-2.dll" />
     <Content Include="lib\sfmlnet-system-2.dll" />
     <Content Include="lib\sfmlnet-window-2.dll" />
+    <Content Include="Resources\background.PNG" />
+    <Content Include="Resources\BankTower.PNG" />
+    <Content Include="Resources\IceTower.PNG" />
+    <Content Include="Resources\LazorGun.PNG" />
+    <Content Include="Resources\MachineGun.PNG" />
+    <Content Include="Resources\mainBase.JPG" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>XCOPY "$(SolutionDir)TowerDefenseGame\Resources\*.*" "$(TargetDir)Resources\*.*" /Y</PostBuildEvent>
+  </PropertyGroup>
 </Project>
