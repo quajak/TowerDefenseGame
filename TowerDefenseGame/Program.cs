@@ -11,10 +11,10 @@ using SFML.Window;
 
 namespace TrySFML2
 {
-    class Program
+    internal class Program
     {
         public static GameEvent gameEvent = GameEvent.None;
-        static RenderWindow window;
+        private static RenderWindow window;
 
         public static List<Entity> objects = new List<Entity>();
         public static List<Entity> toChange = new List<Entity>();
@@ -31,11 +31,12 @@ namespace TrySFML2
         public static Vector2u gameSize;
 
         public static Tower ToCreate = new MachineGun(0, 0);
-        public static Font font = new Font("arial.ttf");
+        public static Font font = new Font("./Resources/TitilliumWeb-Regular.ttf"); //from https://www.1001freefonts.com/titillium-web.font
 
         private static int money = 10;
         public static int moneyRate = 1;
-        static Text moneyText = new Text("", font, 32)
+
+        private static Text moneyText = new Text("", font, 32)
         {
             Position = new Vector2f(800, 10)
         };
@@ -43,12 +44,14 @@ namespace TrySFML2
         public static int EnemiesKilled = 0;
         public static long timePlayed = 0;
 
-        static float baseEvolutionFactor = 1f;
+        private static float baseEvolutionFactor = 1f;
 
-        static int bossSize = 5;
-        static float timeBetweenBosses = 60_000;
-        static float timePassed = 0;
-        static float lastTimePlayed = 0;
+        private static int bossSize = 5;
+        private static float timeBetweenBosses = 60_000;
+        private static float timePassed = 0;
+        private static float lastTimePlayed = 0;
+
+        public static TowerOverViewGUI towerGUI;
 
         public static float EvolutionFactor
         {
@@ -82,7 +85,7 @@ namespace TrySFML2
             }
         }
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             window = new RenderWindow(VideoMode.DesktopMode, "Game");
             gameSize = window.Size;
@@ -128,6 +131,8 @@ namespace TrySFML2
             baseEvolutionFactor = (mainMenu.difficulty + 1) / 2f;
             moneyRate = (mainMenu.difficulty + 2) / 3;
 
+            towerGUI = new TowerOverViewGUI();
+            objects.Add(towerGUI);
             objects.Add(new MenuGUI());
 
             Text fpsCounter = new Text("", font, 32)
@@ -194,14 +199,14 @@ namespace TrySFML2
                                             //spawn on y border
                                             posX = random.Next((int)gameSize.X);
                                             posY = random.NextBool() ? 0 : (int)gameSize.Y;
-
                                         }
                                         Enemy item1 = new Enemy(posX, posY, eSize);
                                         enemies.Add(item1);
                                         toChange.Add(item1);
                                     }
                                 }
-                                #endregion
+
+                                #endregion Spawn Regular Enemies
 
                                 #region Spawn Boss
 
@@ -237,9 +242,9 @@ namespace TrySFML2
                                             break;
                                         }
                                     }
-
                                 }
-                                #endregion
+
+                                #endregion Spawn Boss
                             }
                 }
                 Console.WriteLine($"Debug at {timePlayed / 1000} - Enemies: {enemies.Count} + {num}- Killed: {EnemiesKilled} - Total Entities: {objects.Count} - Evolution Factor: {EvolutionFactorString}");
@@ -259,7 +264,6 @@ namespace TrySFML2
             {
                 window.DispatchEvents(); // Here all event handlers are called
 
-
                 TimeSpan timeSpan = DateTime.Now - dateTime;
                 dateTime = DateTime.Now;
                 double totalMilliseconds = timeSpan.TotalMilliseconds; //Extreme lags or other interruptions cause too large delays for the game to handle
@@ -275,7 +279,7 @@ namespace TrySFML2
                 window.Clear(Color.Blue);
 
                 window.Draw(background);
-                objects = objects.OrderByDescending(o => o.renderLayer).ToList();
+                objects = objects.OrderBy(o => o.renderLayer).ToList();
                 for (int i = 0; i < objects.Count; i++)
                 {
                     Entity item = objects[i];
@@ -303,6 +307,11 @@ namespace TrySFML2
                             }
                         }
                     }
+                }
+
+                foreach (var text in texts)
+                {
+                    window.Draw(text);
                 }
 
                 //now handle additions or deletions
@@ -364,6 +373,7 @@ namespace TrySFML2
                 window.Display();
             }
         }
+
         public static bool IsFree(float x, float y, Shape s)
         {
             if (s is RectangleShape rectangle)
@@ -408,7 +418,7 @@ namespace TrySFML2
                 {
                     if (((item.position.X <= X) && (item.position.X + rectangleShape.Size.X > X)) && (item.position.Y <= Y && item.position.Y + rectangleShape.Size.Y > Y))
                     {
-                        if (!(item is GUI g) || g.shown)
+                        if (!(item is GUI g) || g.visible)
                         {
                             return item;
                         }
@@ -418,7 +428,7 @@ namespace TrySFML2
                 {
                     if (circleShape.Radius > E.Distance(new Vector2f(X, Y), item.position))
                     {
-                        if (!(item is GUI g) || g.shown)
+                        if (!(item is GUI g) || g.visible)
                         {
                             return item;
                         }
@@ -446,9 +456,15 @@ namespace TrySFML2
                         toChange.Add(item);
                     }
                 }
+                if (towerGUI != null)
+                {
+                    towerGUI.visible = false;
+                    towerGUI.selected = null;
+                }
             }
             else
             {
+                Console.WriteLine($"Clicked on {clicked.GetType().Name}");
                 clicked.OnClick(e.X, e.Y, e.Button);
             }
         }
@@ -492,7 +508,6 @@ namespace TrySFML2
                        pointsB[edgeIndex - edgeCountA].Y - pointsB[edgeIndex - edgeCountA - 1 >= 0 ? edgeIndex - edgeCountA - 1 : pointsB.Count - 1].Y);
                 }
 
-
                 // Find the axis perpendicular to the current edge
                 Vector2f axis = new Vector2f(-edge.Y, edge.X);
                 axis = E.Normalize(axis);
@@ -508,7 +523,6 @@ namespace TrySFML2
                 // Check if the polygon projections are currentlty intersecting
                 if (E.IntervalDistance(minA, maxA, minB, maxB) > 0)
                     intersect = false;
-
             }
             return intersect;
         }

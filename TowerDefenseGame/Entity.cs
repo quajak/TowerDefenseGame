@@ -88,9 +88,12 @@ namespace TrySFML2
 
         virtual public Shape Update(double timeDiff)
         {
-            position.X += velocity.X * (float)timeDiff / 1000f;
-            position.Y += velocity.Y * (float)timeDiff / 1000f;
-            shape.Position = position;
+            if(shape != null)
+            {
+                position.X += velocity.X * (float)timeDiff / 1000f;
+                position.Y += velocity.Y * (float)timeDiff / 1000f;
+                shape.Position = position;
+            }
             return shape;
         }
 

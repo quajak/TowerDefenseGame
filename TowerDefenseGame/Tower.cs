@@ -1,5 +1,6 @@
 ﻿using SFML.Graphics;
 using SFML.System;
+using SFML.Window;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +9,10 @@ using System.Threading.Tasks;
 
 namespace TrySFML2
 {
-    class MainBase : Tower
+    internal class MainBase : Tower
     {
         private static int instances = 0;
+
         public static bool Available
         {
             get
@@ -19,7 +21,7 @@ namespace TrySFML2
             }
         }
 
-        public MainBase(int X, int Y, bool count = true) : base(X, Y, new RectangleShape(new Vector2f(30, 30)), 0)
+        public MainBase(int X, int Y, bool count = true) : base(X, Y, new RectangleShape(new Vector2f(30, 30)), 0, "Main Base", "Protect it at all costs", 0f, Program.moneyRate)
         {
             if (count)
             {
@@ -36,40 +38,72 @@ namespace TrySFML2
             return new MainBase(x, y);
         }
 
-        double time = 0;
+        private double time = 0;
+
         public override Shape Update(double timeDiff)
         {
             time -= timeDiff;
             while (time < 0)
             {
                 time += 1000;
-                Program.Money += Program.moneyRate;
+                Program.Money += (int)amount.Value;
             }
 
             return base.Update(timeDiff);
         }
     }
 
-    class Tower : Entity
+    internal class Tower : Entity
     {
         public int cost = 0;
+        public string name;
+        public string description;
+        public Stat range;
+        public Stat attackSpeed;
+        public Stat amount;
+        public List<Upgrade> installed = new List<Upgrade>();
+        public List<Upgrade> available = new List<Upgrade>();
+        public List<Upgrade> locked = new List<Upgrade>();
 
-        public Tower(float ax, float ay, Shape shape, int cost) : base(ax, ay, shape)
+        public Tower(float ax, float ay, Shape shape, int cost, string name, string description, float range, float amount, float attackSpeed = 0) : base(ax, ay, shape)
         {
             this.cost = cost;
+            this.name = name;
+            this.description = description;
+            this.range = new Stat(range);
+            this.attackSpeed = new Stat(attackSpeed);
+            this.amount = new Stat(amount);
             blocking = true;
+        }
+
+        public override void OnClick(int x, int y, Mouse.Button button)
+        {
+            Program.towerGUI.visible = true;
+            Program.towerGUI.selected = this;
+            base.OnClick(x, y, button);
         }
     }
 
-    class BankTower : Tower
+    internal class BankTower : Tower
     {
-        static int _cost = 20;
+        private static int _cost = 20;
 
-        public BankTower(float x, float y, bool buy = false) : base(x, y, new RectangleShape(new Vector2f(25, 25)), _cost)
+        public BankTower(float x, float y, bool buy = false) : base(x, y, new RectangleShape(new Vector2f(25, 25)), _cost,
+            "Bank", $"Creates ${Program.moneyRate} every 3 seconds", 0f, Program.moneyRate, 3_000f)
         {
             if (buy)
                 Program.Money -= cost;
             shape.Texture = new Texture("./Resources/BankTower.png");
+            Upgrade item = new Upgrade(new Modifier(ModifierType.Value, 1), 20, "More Money", "Increases money gain by 1", UpdateType.Amount)
+            {
+                unlocks =
+                {
+                    new Upgrade(new Modifier(ModifierType.Value, 1), 30, "More Money II", "Increases money gain by 1", UpdateType.Amount),
+                    new Upgrade(new Modifier(ModifierType.Percentage, -33), 10, "Print quicker", "Decreases time between funds by 33%", UpdateType.Speed)
+                }
+            };
+            available.Add(item);
+            Collides.Add(typeof(Enemy));
         }
 
         public static bool Available
@@ -80,30 +114,39 @@ namespace TrySFML2
             }
         }
 
+        public override void Collision(Entity collided)
+        {
+            if (collided is Enemy e)
+            {
+                Program.toChange.Add(this);
+            }
+        }
+
         public override Entity Create(int x, int y)
         {
             return new BankTower(x, y, true);
         }
 
-        static float maxMoneyTime = 3_000;
-        float moneyTime = 0;
+        private float moneyTime = 0;
+
         public override Shape Update(double timeDiff)
         {
+            description = $"Creates ${(int)amount.Value} every 3 seconds";
             moneyTime += (float)timeDiff;
-            if (moneyTime > maxMoneyTime)
+            if (moneyTime > attackSpeed.Value)
             {
-                Program.Money += Program.moneyRate;
+                Program.Money += (int)amount.Value;
                 moneyTime = 0;
             }
             return base.Update(timeDiff);
         }
     }
 
-    class IceTower : Tower
+    internal class IceTower : Tower
     {
-        static int _cost = 15;
+        private static int _cost = 15;
 
-        public IceTower(float x, float y, bool buy = false) : base(x, y, new CircleShape(10f), _cost)
+        public IceTower(float x, float y, bool buy = false) : base(x, y, new CircleShape(10f), _cost, "Ice Tower", "Slows down enemies in range by 50%", 150f, -40)
         {
             if (buy)
                 Program.Money -= cost;
@@ -123,21 +166,19 @@ namespace TrySFML2
             return new IceTower(x, y, true);
         }
 
-        static float range = 150;
-        List<Enemy> affected = new List<Enemy>();
-        Modifier slowDown = new Modifier(ModifierType.Percentage, -40);
+        private List<Enemy> affected = new List<Enemy>();
+
         public override Shape Update(double timeDiff)
         {
             lock (Program.enemies)
             {
-
                 foreach (var enemy in Program.enemies)
                 {
-                    if (!affected.Contains(enemy) && E.Distance(enemy, this) < range)
+                    if (!affected.Contains(enemy) && E.Distance(enemy, this) < range.Value)
                     {
                         Enemy item = enemy as Enemy;
                         Stat speed = item.Speed;
-                        speed.modifiers.Add(slowDown);
+                        speed.modifiers.Add(new Modifier(ModifierType.Percentage, amount.Value, "SlowDown"));
                         item.Speed = speed;
                         affected.Add(item);
                     }
@@ -145,22 +186,23 @@ namespace TrySFML2
             }
             foreach (var enemy in affected)
             {
-                if (E.Distance(enemy, this) > range)
-                    enemy.Speed.modifiers.Remove(slowDown);
+                if (E.Distance(enemy, this) > range.Value)
+                    enemy.Speed.modifiers.RemoveAll(m => m.name == "SlowDown");
             }
             return base.Update(timeDiff);
         }
     }
 
-    class Bomb : Tower
+    internal class Bomb : Tower
     {
-        static int _cost = 1;
-        static float maxRadius = 30;
-        float radius = 1;
-        float growth = 0.03f;
-        float timeAtMax = 0;
-        static float maxTimeAtMax = 800; //In milliseconds
-        public Bomb(float x, float y, bool buy = false) : base(x, y, new CircleShape(3), _cost)
+        private static int _cost = 1;
+        private static float maxRadius = 30;
+        private float radius = 1;
+        private float growth = 0.03f;
+        private float timeAtMax = 0;
+        private static float maxTimeAtMax = 800; //In milliseconds
+
+        public Bomb(float x, float y, bool buy = false) : base(x, y, new CircleShape(3), _cost, "Bomb", "Kills enemy while exploding", 0f, 0f)
         {
             renderLayer = 90; // Cheap hack so that the lazor is below the tower
             if (buy)
@@ -200,11 +242,16 @@ namespace TrySFML2
             }
             return base.Update(timeDiff);
         }
+
+        public override void OnClick(int x, int y, Mouse.Button button)
+        {
+        }
     }
 
-    class LazorGun : Tower
+    internal class LazorGun : Tower
     {
-        static int _cost = 20;
+        private static int _cost = 20;
+
         public static bool Available
         {
             get
@@ -212,16 +259,44 @@ namespace TrySFML2
                 return Program.Money >= _cost && !MainBase.Available;
             }
         }
-        double attackTime = 0;
-        double maxAttackTime = 2500;
 
-        public LazorGun(int aX, int aY, bool buy = false) : base(aX, aY, new RectangleShape(new Vector2f(20, 20)), _cost)
+        private double attackTime = 0;
+
+        public LazorGun(int aX, int aY, bool buy = false) : base(aX, aY, new RectangleShape(new Vector2f(20, 20)), _cost, "Lazor Gun", "Shoots lazors", 400f, 0f, 2_500f)
         {
             renderLayer = 90; // Cheap hack so that the lazor is below the tower
             if (buy)
                 Program.Money -= cost;
-            shape.Origin = new Vector2f(5, 5);
+            shape.Origin = new Vector2f(10, 10);
             shape.Texture = new Texture("./Resources/LazorGun.png");
+            Upgrade rangeI = new Upgrade(new Modifier(ModifierType.Value, 100), 5, "Further I", "Increases range by 100", UpdateType.Range)
+            {
+                unlocks =
+                {
+                    new Upgrade(new Modifier(ModifierType.Percentage, 20), 7, "Further II", "Increases range by 20%", UpdateType.Range)
+                    {
+                        unlocks =
+                        {
+                            new Upgrade(new Modifier(ModifierType.Value, 600), 15, "Further III", "Shoots as far as you can see!", UpdateType.Range)
+                        }
+                    }
+                }
+            };
+            Upgrade speedI = new Upgrade(new Modifier(ModifierType.Percentage, -20), 5, "Faster I", "Shoots 20% quicker.", UpdateType.Speed)
+            {
+                unlocks =
+                {
+                    new Upgrade(new Modifier(ModifierType.Percentage, -20), 10, "Faster II", "Shoots 20% quicker.", UpdateType.Speed)
+                    {
+                        unlocks =
+                        {
+                            new Upgrade(new Modifier(ModifierType.Percentage, -20), 13, "Faster III", "Shoots 20% quicker.", UpdateType.Speed)
+                        }
+                    }
+                }
+            };
+            available.Add(rangeI);
+            available.Add(speedI);
         }
 
         override public Entity Create(int x, int y)
@@ -234,11 +309,11 @@ namespace TrySFML2
             attackTime -= timeDiff;
             if (attackTime < 0)
             {
-                attackTime = maxAttackTime;
+                attackTime = attackSpeed.Value;
                 lock (Program.toChange) lock (Program.enemies)
                     {
                         var possible = from enemy in Program.enemies
-                                       where E.Distance(this, enemy) < 1000
+                                       where E.Distance(this, enemy) < range.Value
                                        select enemy;
                         var list = possible.OrderBy(x => E.Distance(this, x)).Take(10).OrderBy(e => (e as Enemy).DistanceToGoal).ToList();
                         if (list.Count != 0)
@@ -249,7 +324,7 @@ namespace TrySFML2
                             float dY = item.position.Y - position.Y;
                             float angle = (float)Math.Atan2(dY, dX) / (float)Math.PI * 180f;
                             shape.Rotation = angle - 90f;
-                            Program.toChange.Add(new Lazor(position.X, position.Y, 600, 2, angle));
+                            Program.toChange.Add(new Lazor(position.X, position.Y, range.Value, 2, angle));
                         }
                     }
             }
@@ -257,12 +332,12 @@ namespace TrySFML2
         }
     }
 
-    class Lazor : Entity
+    internal class Lazor : Entity
     {
         public double time;
+
         public Lazor(float x, float y, float length, float width, float angle) : base(x, y, new RectangleShape(new Vector2f(length, width)) { Position = new Vector2f(x, y), Rotation = angle, FillColor = new Color(140, 14, 0, 255) })
         {
-
         }
 
         public override Shape Update(double timeDiff)
@@ -274,9 +349,10 @@ namespace TrySFML2
         }
     }
 
-    class MachineGun : Tower
+    internal class MachineGun : Tower
     {
-        static int _cost = 10;
+        private static int _cost = 10;
+
         public static bool Available
         {
             get
@@ -284,15 +360,63 @@ namespace TrySFML2
                 return Program.Money >= _cost && !MainBase.Available;
             }
         }
-        double attackTime = 0;
-        double maxAttackTime = 180;
 
-        public MachineGun(int aX, int aY, bool buy = false) : base(aX, aY, new RectangleShape(new Vector2f(20, 20)), _cost)
+        private double attackTime = 0;
+
+        public MachineGun(int aX, int aY, bool buy = false) : base(aX, aY, new RectangleShape(new Vector2f(20, 20)), _cost, "Machine Gun",
+            "Shoots bullets very quickly", 200f, 1f, 150f)
         {
-            shape.Origin = new Vector2f(5, 5);
+            shape.Origin = new Vector2f(10, 10);
             if (buy)
                 Program.Money -= cost;
             shape.Texture = new Texture("./Resources/MachineGun.png");
+            Upgrade pierceI = new Upgrade(new Modifier(ModifierType.Value, 1), 3, "Pierce I", "Bullets do 1 damage more", UpdateType.Amount)
+            {
+                unlocks =
+                {
+                    new Upgrade(new Modifier(ModifierType.Value, 1), 5, "Pierce II", "Bullets do 1 damage more", UpdateType.Amount)
+                    {
+                        unlocks =
+                        {
+                            new Upgrade(new Modifier(ModifierType.Value, 1), 7, "Pierce III", "Bullets do 1 damage more", UpdateType.Amount)
+                            {
+                                unlocks =
+                                {
+                                    new Upgrade(new Modifier(ModifierType.Value, 3), 10, "Pierce IV", "Bullets 3 damage more", UpdateType.Amount)
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            Upgrade rangeI = new Upgrade(new Modifier(ModifierType.Value, 50), 5, "Further I", "Increases range by 100", UpdateType.Range)
+            {
+                unlocks =
+                {
+                    new Upgrade(new Modifier(ModifierType.Value, 50), 6, "Further II", "Increases range by 50", UpdateType.Range)
+                    {
+                        unlocks =
+                        {
+                            new Upgrade(new Modifier(ModifierType.Value, 100), 10, "Further III", "Increases range by 100", UpdateType.Range)
+                        }
+                    }
+                }
+            };
+            Upgrade speedI = new Upgrade(new Modifier(ModifierType.Value, -30), 2, "Faster I", "Shoots bullets 20% quicker", UpdateType.Speed)
+            {
+                unlocks = {
+                    new Upgrade(new Modifier(ModifierType.Value, -30), 2, "Faster II", "Shoots bullets 25% quicker", UpdateType.Speed)
+                    {
+                        unlocks =
+                        {
+                            new Upgrade(new Modifier(ModifierType.Absolute, 50), 10, "Super Fast", "Shoots 20 bullets a second", UpdateType.Speed)
+                        }
+                    }
+                }
+            };
+            available.Add(pierceI);
+            available.Add(rangeI);
+            available.Add(speedI);
         }
 
         override public Entity Create(int x, int y)
@@ -305,11 +429,11 @@ namespace TrySFML2
             attackTime -= timeDiff;
             if (attackTime < 0)
             {
-                attackTime = maxAttackTime;
+                attackTime = attackSpeed.Value;
                 lock (Program.toChange) lock (Program.enemies)
                     {
                         var possible = from enemy in Program.enemies
-                                       where E.Distance(this, enemy) < 200
+                                       where E.Distance(this, enemy) < range.Value
                                        select enemy;
                         var list = possible.OrderBy(x => E.Distance(this, x)).Take(1).ToList();
                         if (list.Count != 0)
@@ -317,14 +441,14 @@ namespace TrySFML2
                             Entity item = list[0];
                             //Generate bullet
                             var size = (shape as RectangleShape).Size;
-                            float dX = item.position.X  - (position.X + Program.random.Next(10) - 5);
+                            float dX = item.position.X - (position.X + Program.random.Next(10) - 5);
                             float dY = item.position.Y - (position.Y + Program.random.Next(10) - 5);
                             float vX = dX / Math.Max(Math.Abs(dX), Math.Abs(dY)) + (float)(Program.random.NextDouble() - 0.5d) / 4f;
                             float vY = dY / Math.Max(Math.Abs(dX), Math.Abs(dY)) + (float)(Program.random.NextDouble() - 0.5d) / 4f;
                             float scale = E.Scale(vX, vY, 1300);
                             //Rotate the gun
                             shape.Rotation = (float)Math.Atan2(vY, vX) / (2f * (float)Math.PI) * 360f - 90f;
-                            Program.toChange.Add(new Bullet(position.X, position.Y, vX * scale, vY * scale, 1300));
+                            Program.toChange.Add(new Bullet(position.X, position.Y, vX * scale, vY * scale, 1300, amount.Value));
                         }
                     }
             }
@@ -332,15 +456,18 @@ namespace TrySFML2
         }
     }
 
-    class Bullet : Entity
+    internal class Bullet : Entity
     {
         private readonly float maxDistance;
-        float distance = 0;
-        public Bullet(float aX, float aY, float vX, float vY, float maxDistance) : base(aX, aY, vX, vY, new RectangleShape(new Vector2f(10, 2)))
+        public readonly float damage;
+        private float distance = 0;
+
+        public Bullet(float aX, float aY, float vX, float vY, float maxDistance, float damage) : base(aX, aY, vX, vY, new RectangleShape(new Vector2f(10, 2)))
         {
             shape.Origin = new Vector2f(1, 3);
             shape.Rotation = (float)(Math.Atan(vY / vX) / (2 * Math.PI) * 360);
             this.maxDistance = maxDistance;
+            this.damage = damage;
         }
 
         public override Shape Update(double timeDiff)

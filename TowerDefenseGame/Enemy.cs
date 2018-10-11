@@ -3,13 +3,14 @@ using SFML.System;
 
 namespace TrySFML2
 {
-    class Enemy : Entity
+    internal class Enemy : Entity
     {
-        Stat vX;
-        Stat vY;
-        int size;
-        bool colorSet = false;
-        Stat speed;
+        private Stat vX;
+        private Stat vY;
+        private int size;
+        private bool colorSet = false;
+        private Stat speed;
+
         public float DistanceToGoal
         {
             get
@@ -54,6 +55,7 @@ namespace TrySFML2
                 }
             }
         }
+
         internal Stat VY
         {
             get => vY; set
@@ -123,17 +125,21 @@ namespace TrySFML2
                     {
                         Program.toChange.Add(b);
                     }
-                    Pop();
+                    Pop((int)b.damage);
                     break;
+
                 case MainBase m:
                     Program.GameEnded = true;
                     break;
+
                 case Lazor l:
                     Pop();
                     break;
+
                 case Bomb b:
                     Pop();
                     break;
+
                 default:
                     break;
             }
@@ -142,7 +148,7 @@ namespace TrySFML2
         public void Pop(int amount = 1)
         {
             Size -= amount;
-            if (size == 0)
+            if (size <= 0)
             {
                 lock (Program.toChange)
                 {

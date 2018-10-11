@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace TrySFML2
 {
-    class Stat
+    internal class Stat
     {
-        public List<Modifier> modifiers= new List<Modifier>();
+        public List<Modifier> modifiers = new List<Modifier>();
         public float baseValue;
 
         public Stat(float baseValue)
@@ -31,17 +31,20 @@ namespace TrySFML2
         }
     }
 
-    enum ModifierType { Value = 0, Percentage = 1, Absolute = 2}
+    internal enum ModifierType
+    { Value = 0, Percentage = 1, Absolute = 2 }
 
-    class Modifier
+    internal class Modifier
     {
         public ModifierType type;
         public float value;
+        public readonly string name;
 
-        public Modifier(ModifierType type, float value)
+        public Modifier(ModifierType type, float value, string name = "")
         {
             this.type = type;
             this.value = value;
+            this.name = name;
         }
 
         public float Apply(float _val)
@@ -50,10 +53,13 @@ namespace TrySFML2
             {
                 case ModifierType.Value:
                     return _val + value;
+
                 case ModifierType.Percentage:
                     return _val * (1 + value / 100);
+
                 case ModifierType.Absolute:
                     return value;
+
                 default:
                     throw new NotImplementedException();
             }
