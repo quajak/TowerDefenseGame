@@ -372,19 +372,19 @@ namespace TrySFML2
             if (buy)
                 Program.Money -= cost;
             shape.Texture = new Texture("./Resources/MachineGun.png");
-            Upgrade pierceI = new Upgrade(new Modifier(ModifierType.Value, 1), 3, "Pierce I", "Bullets do 1 damage more", UpdateType.Amount)
+            Upgrade pierceI = new Upgrade(new Modifier(ModifierType.Value, 1), 3, "Damage I", "Bullets do 1 damage more", UpdateType.Amount)
             {
                 Unlocks =
                 {
-                    new Upgrade(new Modifier(ModifierType.Value, 1), 5, "Pierce II", "Bullets do 1 damage more", UpdateType.Amount)
+                    new Upgrade(new Modifier(ModifierType.Value, 1), 5, "Damage II", "Bullets do 1 damage more", UpdateType.Amount)
                     {
                         Unlocks =
                         {
-                            new Upgrade(new Modifier(ModifierType.Value, 1), 7, "Pierce III", "Bullets do 1 damage more", UpdateType.Amount)
+                            new Upgrade(new Modifier(ModifierType.Value, 1), 7, "Damage III", "Bullets do 1 damage more", UpdateType.Amount)
                             {
                                 Unlocks =
                                 {
-                                    new Upgrade(new Modifier(ModifierType.Value, 3), 10, "Pierce IV", "Bullets 3 damage more", UpdateType.Amount)
+                                    new Upgrade(new Modifier(ModifierType.Value, 3), 10, "Damage IV", "Bullets 3 damage more", UpdateType.Amount)
                                 }
                             }
                         }
@@ -451,34 +451,9 @@ namespace TrySFML2
                             float scale = E.Scale(vX, vY, 1300);
                             //Rotate the gun
                             shape.Rotation = (float)Math.Atan2(vY, vX) / (2f * (float)Math.PI) * 360f - 90f;
-                            Program.toChange.Add(new Bullet(position.X, position.Y, vX * scale, vY * scale, 1300, amount.Value, BulletSize));
+                            Program.toChange.Add(new Bullet(position.X, position.Y, vX * scale, vY * scale, 1300, amount.Value, amount.Value, BulletSize, new Vector2f(10, 2)));
                         }
                     }
-            }
-            return base.Update(timeDiff);
-        }
-    }
-
-    internal class Bullet : Entity
-    {
-        private readonly float maxDistance;
-        public readonly float damage;
-        private float distance = 0;
-
-        public Bullet(float aX, float aY, float vX, float vY, float maxDistance, float damage, float bulletSize) : base(aX, aY, vX, vY, new RectangleShape(new Vector2f(10 * bulletSize, 2 * bulletSize)))
-        {
-            shape.Origin = new Vector2f(5 * bulletSize, bulletSize);
-            shape.Rotation = (float)(Math.Atan(vY / vX) / (2 * Math.PI) * 360);
-            this.maxDistance = maxDistance;
-            this.damage = damage;
-        }
-
-        public override Shape Update(double timeDiff)
-        {
-            distance += (float)Math.Sqrt(Math.Pow(velocity.X * timeDiff / 1000f, 2) + Math.Pow(velocity.Y * timeDiff / 1000f, 2));
-            if ((position.X < 0 || position.X > Program.gameSize.X) || (position.Y < 0 || position.Y > Program.gameSize.Y) || distance > maxDistance)
-            {
-                Program.toChange.Add(this);
             }
             return base.Update(timeDiff);
         }

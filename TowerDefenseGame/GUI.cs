@@ -271,6 +271,11 @@ namespace TrySFML2
             item.shape.Texture = new Texture("./Resources/DeselectTool.png");
             parts.Add(item);
             Program.objects.Add(item);
+            item = new GUIField(20, 580, 60, 60, Color.White, "Cannon");
+            item.renderLayer = 90;
+            item.shape.Texture = new Texture("./Resources/Cannon.png");
+            parts.Add(item);
+            Program.objects.Add(item);
         }
 
         public override void OnClick(int x, int y, Mouse.Button button)
@@ -322,6 +327,11 @@ namespace TrySFML2
 
                         case "Deselect":
                             Program.ToCreate = null;
+                            break;
+
+                        case "Cannon":
+                            if (Cannon.Available)
+                                Program.ToCreate = new Cannon(x, y);
                             break;
 
                         default:
@@ -381,6 +391,12 @@ namespace TrySFML2
             s.FillColor = color;
             s.OutlineThickness = Program.ToCreate != null && Program.ToCreate.GetType() == typeof(IceTower) ? 2 : 0;
 
+            s = parts.Find(p => p.name == "Cannon").shape;
+            color = s.FillColor;
+            color.A = Cannon.Available ? (byte)255 : (byte)100;
+            s.FillColor = color;
+            s.OutlineThickness = Program.ToCreate != null && Program.ToCreate.GetType() == typeof(Cannon) ? 2 : 0;
+
             return base.Update(timeDiff);
         }
     }
@@ -439,7 +455,7 @@ namespace TrySFML2
                 {
                     UpgradeGUI gU = new UpgradeGUI(x, y, upgrade, $"upgrade{upgrade.Name}");
                     gU.Click += GU_Click;
-                    y += UpgradeGUI.Height;
+                    y += UpgradeGUI.Height + 10;
                     parts.Add(gU);
                     Program.objects.Add(gU);
                 }

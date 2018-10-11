@@ -79,6 +79,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Animation.cs" />
+    <Compile Include="Projectile.cs" />
+    <Compile Include="Towers\Cannon.cs" />
     <Compile Include="E.cs" />
     <Compile Include="Enemy.cs" />
     <Compile Include="Entity.cs" />
@@ -114,7 +117,9 @@
     <Content Include="lib\sfmlnet-window-2.dll" />
     <Content Include="Resources\background.PNG" />
     <Content Include="Resources\BankTower.PNG" />
+    <Content Include="Resources\Cannon.PNG" />
     <Content Include="Resources\DeselectTool.PNG" />
+    <Content Include="Resources\explosion.png" />
     <Content Include="Resources\IceTower.PNG" />
     <Content Include="Resources\LazorGun.PNG" />
     <Content Include="Resources\MachineGun.PNG" />
