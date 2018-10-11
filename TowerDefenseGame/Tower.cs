@@ -79,7 +79,7 @@ namespace TrySFML2
         public override void OnClick(int x, int y, Mouse.Button button)
         {
             Program.towerGUI.visible = true;
-            Program.towerGUI.selected = this;
+            Program.towerGUI.Selected = this;
             base.OnClick(x, y, button);
         }
     }
@@ -96,7 +96,7 @@ namespace TrySFML2
             shape.Texture = new Texture("./Resources/BankTower.png");
             Upgrade item = new Upgrade(new Modifier(ModifierType.Value, 1), 20, "More Money", "Increases money gain by 1", UpdateType.Amount)
             {
-                unlocks =
+                Unlocks =
                 {
                     new Upgrade(new Modifier(ModifierType.Value, 1), 30, "More Money II", "Increases money gain by 1", UpdateType.Amount),
                     new Upgrade(new Modifier(ModifierType.Percentage, -20), 15, "Print quicker", "Decreases time between funds by 20%", UpdateType.Speed)
@@ -271,11 +271,11 @@ namespace TrySFML2
             shape.Texture = new Texture("./Resources/LazorGun.png");
             Upgrade rangeI = new Upgrade(new Modifier(ModifierType.Value, 100), 5, "Further I", "Increases range by 100", UpdateType.Range)
             {
-                unlocks =
+                Unlocks =
                 {
                     new Upgrade(new Modifier(ModifierType.Percentage, 20), 7, "Further II", "Increases range by 20%", UpdateType.Range)
                     {
-                        unlocks =
+                        Unlocks =
                         {
                             new Upgrade(new Modifier(ModifierType.Value, 600), 15, "Further III", "Shoots as far as you can see!", UpdateType.Range)
                         }
@@ -284,11 +284,11 @@ namespace TrySFML2
             };
             Upgrade speedI = new Upgrade(new Modifier(ModifierType.Percentage, -20), 5, "Faster I", "Shoots 20% quicker.", UpdateType.Speed)
             {
-                unlocks =
+                Unlocks =
                 {
                     new Upgrade(new Modifier(ModifierType.Percentage, -20), 10, "Faster II", "Shoots 20% quicker.", UpdateType.Speed)
                     {
-                        unlocks =
+                        Unlocks =
                         {
                             new Upgrade(new Modifier(ModifierType.Percentage, -20), 13, "Faster III", "Shoots 20% quicker.", UpdateType.Speed)
                         }
@@ -353,6 +353,7 @@ namespace TrySFML2
     internal class MachineGun : Tower
     {
         private static int _cost = 10;
+        public float BulletSize = 1;
 
         public static bool Available
         {
@@ -373,15 +374,15 @@ namespace TrySFML2
             shape.Texture = new Texture("./Resources/MachineGun.png");
             Upgrade pierceI = new Upgrade(new Modifier(ModifierType.Value, 1), 3, "Pierce I", "Bullets do 1 damage more", UpdateType.Amount)
             {
-                unlocks =
+                Unlocks =
                 {
                     new Upgrade(new Modifier(ModifierType.Value, 1), 5, "Pierce II", "Bullets do 1 damage more", UpdateType.Amount)
                     {
-                        unlocks =
+                        Unlocks =
                         {
                             new Upgrade(new Modifier(ModifierType.Value, 1), 7, "Pierce III", "Bullets do 1 damage more", UpdateType.Amount)
                             {
-                                unlocks =
+                                Unlocks =
                                 {
                                     new Upgrade(new Modifier(ModifierType.Value, 3), 10, "Pierce IV", "Bullets 3 damage more", UpdateType.Amount)
                                 }
@@ -392,11 +393,11 @@ namespace TrySFML2
             };
             Upgrade rangeI = new Upgrade(new Modifier(ModifierType.Value, 25), 5, "Further I", "Increases range by 25", UpdateType.Range)
             {
-                unlocks =
+                Unlocks =
                 {
                     new Upgrade(new Modifier(ModifierType.Value, 50), 6, "Further II", "Increases range by 50", UpdateType.Range)
                     {
-                        unlocks =
+                        Unlocks =
                         {
                             new Upgrade(new Modifier(ModifierType.Value, 100), 15, "Further III", "Increases range by 100", UpdateType.Range)
                         }
@@ -405,10 +406,10 @@ namespace TrySFML2
             };
             Upgrade speedI = new Upgrade(new Modifier(ModifierType.Value, -30), 2, "Faster I", "Shoots bullets 20% quicker", UpdateType.Speed)
             {
-                unlocks = {
+                Unlocks = {
                     new Upgrade(new Modifier(ModifierType.Value, -30), 2, "Faster II", "Shoots bullets 25% quicker", UpdateType.Speed)
                     {
-                        unlocks =
+                        Unlocks =
                         {
                             new Upgrade(new Modifier(ModifierType.Absolute, 50), 10, "Super Fast", "Shoots 20 bullets a second", UpdateType.Speed)
                         }
@@ -418,6 +419,7 @@ namespace TrySFML2
             available.Add(pierceI);
             available.Add(rangeI);
             available.Add(speedI);
+            available.Add(new CustomUpgrade(null, 5, "Bigger bullets", "The bullets are bigger", (tower) => (tower as MachineGun).BulletSize += 0.5f));
         }
 
         override public Entity Create(int x, int y)
@@ -449,7 +451,7 @@ namespace TrySFML2
                             float scale = E.Scale(vX, vY, 1300);
                             //Rotate the gun
                             shape.Rotation = (float)Math.Atan2(vY, vX) / (2f * (float)Math.PI) * 360f - 90f;
-                            Program.toChange.Add(new Bullet(position.X, position.Y, vX * scale, vY * scale, 1300, amount.Value));
+                            Program.toChange.Add(new Bullet(position.X, position.Y, vX * scale, vY * scale, 1300, amount.Value, BulletSize));
                         }
                     }
             }
@@ -463,9 +465,9 @@ namespace TrySFML2
         public readonly float damage;
         private float distance = 0;
 
-        public Bullet(float aX, float aY, float vX, float vY, float maxDistance, float damage) : base(aX, aY, vX, vY, new RectangleShape(new Vector2f(10, 2)))
+        public Bullet(float aX, float aY, float vX, float vY, float maxDistance, float damage, float bulletSize) : base(aX, aY, vX, vY, new RectangleShape(new Vector2f(10 * bulletSize, 2 * bulletSize)))
         {
-            shape.Origin = new Vector2f(1, 3);
+            shape.Origin = new Vector2f(5 * bulletSize, bulletSize);
             shape.Rotation = (float)(Math.Atan(vY / vX) / (2 * Math.PI) * 360);
             this.maxDistance = maxDistance;
             this.damage = damage;

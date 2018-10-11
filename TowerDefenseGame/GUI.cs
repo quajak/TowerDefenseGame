@@ -388,7 +388,7 @@ namespace TrySFML2
     internal class TowerOverViewGUI : GUI
     {
         private List<GUI> parts = new List<GUI>();
-        public Tower selected = null;
+        public Tower Selected = null;
 
         public TowerOverViewGUI() : base(Program.gameSize.X - 200, 0, 200, Program.gameSize.Y)
         {
@@ -415,17 +415,17 @@ namespace TrySFML2
                 parts.Remove(rI);
                 Program.objects.Remove(rI);
             }
-            if (selected != null)
+            if (Selected != null)
             {
                 GUIText t = parts.First(p => p.name == "Name") as GUIText;
-                t.Content = selected.name;
+                t.Content = Selected.name;
                 t = parts.First(p => p.name == "Desc") as GUIText;
-                t.Content = selected.description;
+                t.Content = Selected.description;
                 float x = Program.gameSize.X - 190;
-                float y = 200;
-                if (selected.range.Value != 0)
+                float y = UpgradeGUI.Height;
+                if (Selected.range.Value != 0)
                 {
-                    GUICircle rangeIndicator = new GUICircle(selected.position.X, selected.position.Y, selected.range.Value, new Color(128, 125, 125, 100),
+                    GUICircle rangeIndicator = new GUICircle(Selected.position.X, Selected.position.Y, Selected.range.Value, new Color(128, 125, 125, 100),
                         Color.Black, 2, "RangeIndicator")
                     {
                         clickLayer = 100,
@@ -435,11 +435,11 @@ namespace TrySFML2
                     parts.Add(rangeIndicator);
                     Program.objects.Add(rangeIndicator);
                 }
-                foreach (var upgrade in selected.available)
+                foreach (var upgrade in Selected.available)
                 {
-                    UpgradeGUI gU = new UpgradeGUI(x, y, upgrade, $"upgrade{upgrade.name}");
+                    UpgradeGUI gU = new UpgradeGUI(x, y, upgrade, $"upgrade{upgrade.Name}");
                     gU.Click += GU_Click;
-                    y += 200;
+                    y += UpgradeGUI.Height;
                     parts.Add(gU);
                     Program.objects.Add(gU);
                 }
@@ -458,12 +458,12 @@ namespace TrySFML2
 
         private void GU_Click(object sender, MouseButtonEventArgs e)
         {
-            Upgrade u = (sender as UpgradeGUI).upgrade;
-            selected.installed.Add(u);
-            selected.available.Remove(u);
-            selected.available.AddRange(u.unlocks);
-            Program.Money -= u.cost;
-            u.Install(selected);
+            Upgrade u = (sender as UpgradeGUI).Upgrade;
+            Selected.installed.Add(u);
+            Selected.available.Remove(u);
+            Selected.available.AddRange(u.Unlocks);
+            Program.Money -= u.Cost;
+            u.Install(Selected);
         }
     }
 }

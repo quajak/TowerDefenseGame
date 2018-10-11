@@ -460,7 +460,7 @@ namespace TrySFML2
                 if (towerGUI != null)
                 {
                     towerGUI.visible = false;
-                    towerGUI.selected = null;
+                    towerGUI.Selected = null;
                 }
             }
             else
