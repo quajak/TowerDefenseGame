@@ -84,6 +84,7 @@
     <Compile Include="Entity.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="GUI.cs" />
+    <Compile Include="MainMenuGUI.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stat.cs" />
@@ -113,10 +114,12 @@
     <Content Include="lib\sfmlnet-window-2.dll" />
     <Content Include="Resources\background.PNG" />
     <Content Include="Resources\BankTower.PNG" />
+    <Content Include="Resources\DeselectTool.PNG" />
     <Content Include="Resources\IceTower.PNG" />
     <Content Include="Resources\LazorGun.PNG" />
     <Content Include="Resources\MachineGun.PNG" />
     <Content Include="Resources\mainBase.JPG" />
+    <Content Include="Resources\mainTitleBackground.PNG" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

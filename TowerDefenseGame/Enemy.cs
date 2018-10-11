@@ -88,6 +88,7 @@ namespace TrySFML2
 
         public Enemy(int aX, int aY, int size = 1) : base(aX, aY, new RectangleShape(new Vector2f(5, 5)))
         {
+            renderLayer = 1;
             if (Program.mainBase is null)
             {
                 VX = new Stat((float)Program.random.NextDouble() - 0.5f);

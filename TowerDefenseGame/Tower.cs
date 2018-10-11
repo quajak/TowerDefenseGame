@@ -264,7 +264,7 @@ namespace TrySFML2
 
         public LazorGun(int aX, int aY, bool buy = false) : base(aX, aY, new RectangleShape(new Vector2f(20, 20)), _cost, "Lazor Gun", "Shoots lazors", 400f, 0f, 2_500f)
         {
-            renderLayer = 90; // Cheap hack so that the lazor is below the tower
+            renderLayer = 100; // Cheap hack so that the lazor is below the tower
             if (buy)
                 Program.Money -= cost;
             shape.Origin = new Vector2f(10, 10);
@@ -338,6 +338,7 @@ namespace TrySFML2
 
         public Lazor(float x, float y, float length, float width, float angle) : base(x, y, new RectangleShape(new Vector2f(length, width)) { Position = new Vector2f(x, y), Rotation = angle, FillColor = new Color(140, 14, 0, 255) })
         {
+            renderLayer = 3;
         }
 
         public override Shape Update(double timeDiff)

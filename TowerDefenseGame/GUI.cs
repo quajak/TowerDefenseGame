@@ -73,6 +73,25 @@ namespace TrySFML2
         }
     }
 
+    internal class GUICircle : GUI
+    {
+        public GUICircle(float x, float y, float radius, Color fill, Color border, int borderThickness, string name = "") : base(x, y, 0, 0, name)
+        {
+            shape = new CircleShape(radius)
+            {
+                Position = new Vector2f(x - radius, y - radius),
+                FillColor = fill,
+                OutlineColor = border,
+                OutlineThickness = borderThickness
+            };
+        }
+
+        public override Shape Update(double timeDiff)
+        {
+            return shape;
+        }
+    }
+
     internal class GUIText : GUI
     {
         private List<Text> texts = new List<Text>();
@@ -205,56 +224,6 @@ namespace TrySFML2
         public event EventHandler<MouseButtonEventArgs> Click;
     }
 
-    internal class MainMenuGUI : GUI
-    {
-        private List<GUI> parts = new List<GUI>();
-        private GuiButton difficultyButton;
-        public int difficulty = 1;
-
-        public MainMenuGUI() : base(0, 0, Program.gameSize.X, Program.gameSize.Y)
-        {
-            shape.FillColor = new Color(200, 0, 0, 100);
-            GUIText text = new GUIText(Program.gameSize.X / 3, 200, "Tower Defense Game!", Color.Blue, 64, maxWidth: 600);
-            parts.Add(text);
-            difficultyButton = new GuiButton(Program.gameSize.X / 2 - 200, 300, 150, 40, new Color(0, 0, 200, 100), "Difficult: 1", "difficultyButton");
-            parts.Add(difficultyButton);
-            Program.objects.Add(difficultyButton);
-            difficultyButton.Click += DifficultyButton_Click;
-            GuiButton button = new GuiButton(Program.gameSize.X / 2 - 200, 400, 150, 40, new Color(0, 0, 200, 100), "Start Game");
-            parts.Add(button);
-            Program.objects.Add(button);
-            button.Click += Button_Click;
-        }
-
-        private void Button_Click(object sender, MouseButtonEventArgs e)
-        {
-            Program.gameEvent = Program.GameEvent.Next;
-        }
-
-        private void DifficultyButton_Click(object sender, MouseButtonEventArgs e)
-        {
-            if (e.Button == Mouse.Button.Right)
-                difficulty--;
-            else
-                difficulty++;
-            difficulty = difficulty < 1 ? 1 : difficulty;
-            difficultyButton.Content = $"Difficulty: {difficulty}";
-        }
-
-        public override void Delete()
-        {
-            foreach (var part in parts)
-            {
-                part.Delete();
-                if (part is GuiButton)
-                {
-                    Program.objects.Remove(part);
-                }
-            }
-            base.Delete();
-        }
-    }
-
     internal class MenuGUI : GUI
     {
         private List<GUI> parts = new List<GUI>();
@@ -262,39 +231,44 @@ namespace TrySFML2
         public MenuGUI() : base(0, 0, 100, 1000)
         {
             clickLayer = 1;
-            renderLayer = 1;
+            renderLayer = 80;
             shape.FillColor = new Color(110, 114, 114, 200);
             GUIField item = new GUIField(80, 0, 20, 20, Color.Red, "Hide");
-            item.renderLayer = 10;
+            item.renderLayer = 90;
             parts.Add(item);
             Program.objects.Add(item);
             item = new GUIField(20, 20, 60, 60, Color.White, "Controller");
-            item.renderLayer = 10;
+            item.renderLayer = 90;
             item.shape.Texture = new Texture("./Resources/mainBase.jpg");
             parts.Add(item);
             Program.objects.Add(item);
             item = new GUIField(20, 100, 60, 60, Color.White, "MachineGun");
-            item.renderLayer = 10;
+            item.renderLayer = 90;
             item.shape.Texture = new Texture("./Resources/MachineGun.png");
             parts.Add(item);
             Program.objects.Add(item);
             item = new GUIField(20, 180, 60, 60, Color.White, "LazorGun");
-            item.renderLayer = 10;
+            item.renderLayer = 90;
             item.shape.Texture = new Texture("./Resources/LazorGun.png");
             parts.Add(item);
             Program.objects.Add(item);
             item = new GUIField(20, 260, 60, 60, Color.Black, "Bomb");
-            item.renderLayer = 10;
+            item.renderLayer = 90;
             parts.Add(item);
             Program.objects.Add(item);
             item = new GUIField(20, 340, 60, 60, Color.White, "Bank");
-            item.renderLayer = 10;
+            item.renderLayer = 1900;
             item.shape.Texture = new Texture("./Resources/BankTower.png");
             parts.Add(item);
             Program.objects.Add(item);
             item = new GUIField(20, 420, 60, 60, Color.White, "IceTower");
-            item.renderLayer = 10;
+            item.renderLayer = 90;
             item.shape.Texture = new Texture("./Resources/IceTower.png");
+            parts.Add(item);
+            Program.objects.Add(item);
+            item = new GUIField(20, 500, 60, 60, Color.White, "Deselect");
+            item.renderLayer = 90;
+            item.shape.Texture = new Texture("./Resources/DeselectTool.png");
             parts.Add(item);
             Program.objects.Add(item);
         }
@@ -346,6 +320,10 @@ namespace TrySFML2
                                 Program.ToCreate = new IceTower(x, y);
                             break;
 
+                        case "Deselect":
+                            Program.ToCreate = null;
+                            break;
+
                         default:
                             break;
                     }
@@ -371,31 +349,37 @@ namespace TrySFML2
             Color color = s.FillColor;
             color.A = MainBase.Available ? (byte)255 : (byte)100;
             s.FillColor = color;
+            s.OutlineThickness = Program.ToCreate != null && Program.ToCreate.GetType() == typeof(MainBase) ? 2 : 0;
 
             s = parts.Find(p => p.name == "MachineGun").shape;
             color = s.FillColor;
             color.A = MachineGun.Available ? (byte)255 : (byte)100;
             s.FillColor = color;
+            s.OutlineThickness = Program.ToCreate != null && Program.ToCreate.GetType() == typeof(MachineGun) ? 2 : 0;
 
             s = parts.Find(p => p.name == "LazorGun").shape;
             color = s.FillColor;
             color.A = LazorGun.Available ? (byte)255 : (byte)100;
             s.FillColor = color;
+            s.OutlineThickness = Program.ToCreate != null && Program.ToCreate.GetType() == typeof(LazorGun) ? 2 : 0;
 
             s = parts.Find(p => p.name == "Bomb").shape;
             color = s.FillColor;
             color.A = Bomb.Available ? (byte)255 : (byte)100;
             s.FillColor = color;
+            s.OutlineThickness = Program.ToCreate != null && Program.ToCreate.GetType() == typeof(Bomb) ? 2 : 0;
 
             s = parts.Find(p => p.name == "Bank").shape;
             color = s.FillColor;
             color.A = BankTower.Available ? (byte)255 : (byte)100;
             s.FillColor = color;
+            s.OutlineThickness = Program.ToCreate != null && Program.ToCreate.GetType() == typeof(BankTower) ? 2 : 0;
 
             s = parts.Find(p => p.name == "IceTower").shape;
             color = s.FillColor;
             color.A = IceTower.Available ? (byte)255 : (byte)100;
             s.FillColor = color;
+            s.OutlineThickness = Program.ToCreate != null && Program.ToCreate.GetType() == typeof(IceTower) ? 2 : 0;
 
             return base.Update(timeDiff);
         }
@@ -421,18 +405,36 @@ namespace TrySFML2
 
         public override Shape Update(double timeDiff)
         {
+            var toRemove = parts.Where(p => p.name.Contains("upgrade")).ToList();
+            toRemove.ForEach(p => p.Delete());
+            toRemove.ForEach(p => parts.Remove(p));
+            toRemove.ForEach(p => Program.objects.Remove(p));
+            var rI = parts.FirstOrDefault(p => p.name == "RangeIndicator");
+            if (rI != null)
+            {
+                parts.Remove(rI);
+                Program.objects.Remove(rI);
+            }
             if (selected != null)
             {
                 GUIText t = parts.First(p => p.name == "Name") as GUIText;
                 t.Content = selected.name;
                 t = parts.First(p => p.name == "Desc") as GUIText;
                 t.Content = selected.description;
-                var toRemove = parts.Where(p => p.name.Contains("upgrade")).ToList();
-                toRemove.ForEach(p => p.Delete());
-                toRemove.ForEach(p => parts.Remove(p));
-                toRemove.ForEach(p => Program.objects.Remove(p));
                 float x = Program.gameSize.X - 190;
                 float y = 200;
+                if (selected.range.Value != 0)
+                {
+                    GUICircle rangeIndicator = new GUICircle(selected.position.X, selected.position.Y, selected.range.Value, new Color(128, 125, 125, 100),
+                        Color.Black, 2, "RangeIndicator")
+                    {
+                        clickLayer = 100,
+                        renderLayer = 10,
+                        blocking = false
+                    };
+                    parts.Add(rangeIndicator);
+                    Program.objects.Add(rangeIndicator);
+                }
                 foreach (var upgrade in selected.available)
                 {
                     UpgradeGUI gU = new UpgradeGUI(x, y, upgrade, $"upgrade{upgrade.name}");
@@ -444,11 +446,6 @@ namespace TrySFML2
             }
             else
             {
-                //Cleanup
-                var toRemove = parts.Where(p => p.name.Contains("upgrade")).ToList();
-                toRemove.ForEach(p => p.Delete());
-                toRemove.ForEach(p => parts.Remove(p));
-                toRemove.ForEach(p => Program.objects.Remove(p));
             }
             foreach (var p in parts)
             {

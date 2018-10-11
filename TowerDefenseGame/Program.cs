@@ -30,7 +30,7 @@ namespace TrySFML2
 
         public static Vector2u gameSize;
 
-        public static Tower ToCreate = new MachineGun(0, 0);
+        public static Tower ToCreate;
         public static Font font = new Font("./Resources/TitilliumWeb-Regular.ttf"); //from https://www.1001freefonts.com/titillium-web.font
 
         private static int money = 10;
@@ -127,7 +127,7 @@ namespace TrySFML2
                 }
             }
             // now update to fit difficulty
-            money = mainMenu.difficulty * 8;
+            money = mainMenu.difficulty * 8 + 100;
             baseEvolutionFactor = (mainMenu.difficulty + 1) / 2f;
             moneyRate = (mainMenu.difficulty + 2) / 3;
 
