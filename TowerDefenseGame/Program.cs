@@ -127,7 +127,7 @@ namespace TrySFML2
                 }
             }
             // now update to fit difficulty
-            money = mainMenu.difficulty * 8 + 100;
+            money = mainMenu.difficulty * 8;
             baseEvolutionFactor = (mainMenu.difficulty + 1) / 2f;
             moneyRate = (mainMenu.difficulty + 2) / 3;
 
@@ -416,7 +416,8 @@ namespace TrySFML2
             {
                 if (item.shape is RectangleShape rectangleShape)
                 {
-                    if (((item.position.X <= X) && (item.position.X + rectangleShape.Size.X > X)) && (item.position.Y <= Y && item.position.Y + rectangleShape.Size.Y > Y))
+                    if (((item.position.X - item.shape.Origin.X <= X) && (item.position.X + rectangleShape.Size.X - item.shape.Origin.X > X))
+                        && (item.position.Y - item.shape.Origin.Y <= Y && item.position.Y + rectangleShape.Size.Y - item.shape.Origin.Y > Y))
                     {
                         if (!(item is GUI g) || g.visible)
                         {

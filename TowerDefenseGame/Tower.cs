@@ -99,7 +99,7 @@ namespace TrySFML2
                 unlocks =
                 {
                     new Upgrade(new Modifier(ModifierType.Value, 1), 30, "More Money II", "Increases money gain by 1", UpdateType.Amount),
-                    new Upgrade(new Modifier(ModifierType.Percentage, -33), 10, "Print quicker", "Decreases time between funds by 33%", UpdateType.Speed)
+                    new Upgrade(new Modifier(ModifierType.Percentage, -20), 15, "Print quicker", "Decreases time between funds by 20%", UpdateType.Speed)
                 }
             };
             available.Add(item);
@@ -131,7 +131,7 @@ namespace TrySFML2
 
         public override Shape Update(double timeDiff)
         {
-            description = $"Creates ${(int)amount.Value} every 3 seconds";
+            description = $"Creates ${(int)amount.Value} every {(attackSpeed.Value / 1000f).ToString("0.0")} seconds";
             moneyTime += (float)timeDiff;
             if (moneyTime > attackSpeed.Value)
             {
@@ -390,7 +390,7 @@ namespace TrySFML2
                     }
                 }
             };
-            Upgrade rangeI = new Upgrade(new Modifier(ModifierType.Value, 50), 5, "Further I", "Increases range by 100", UpdateType.Range)
+            Upgrade rangeI = new Upgrade(new Modifier(ModifierType.Value, 25), 5, "Further I", "Increases range by 25", UpdateType.Range)
             {
                 unlocks =
                 {
@@ -398,7 +398,7 @@ namespace TrySFML2
                     {
                         unlocks =
                         {
-                            new Upgrade(new Modifier(ModifierType.Value, 100), 10, "Further III", "Increases range by 100", UpdateType.Range)
+                            new Upgrade(new Modifier(ModifierType.Value, 100), 15, "Further III", "Increases range by 100", UpdateType.Range)
                         }
                     }
                 }

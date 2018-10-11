@@ -9,11 +9,12 @@ using SFML.Window;
 
 namespace TrySFML2
 {
-    class Entity
+    internal class Entity
     {
         public IEnumerable<Vector2f> Points
         {
-            get {
+            get
+            {
                 void RotateVector2d(ref float _x, ref float _y, double degrees)
                 {
                     float tx = _x;
@@ -22,23 +23,24 @@ namespace TrySFML2
                 }
                 List<Vector2f> points = new List<Vector2f>();
 
-                if(shape is RectangleShape rectangleShape)
+                if (shape is RectangleShape rectangleShape)
                 {
-                    points.Add(new Vector2f(position.X, position.Y));
-                    double angle = shape.Rotation/ 180f  * (float)Math.PI;
+                    points.Add(new Vector2f(position.X - shape.Origin.X, position.Y - shape.Origin.Y));
+                    double angle = shape.Rotation / 180f * (float)Math.PI;
                     float x = 0;
                     float y = rectangleShape.Size.Y;
                     RotateVector2d(ref x, ref y, angle);
-                    points.Add(new Vector2f(position.X + x, position.Y + y));
+                    points.Add(new Vector2f(position.X - shape.Origin.X + x, position.Y - shape.Origin.Y + y));
                     x = rectangleShape.Size.X;
                     y = rectangleShape.Size.Y;
                     RotateVector2d(ref x, ref y, angle);
-                    points.Add(new Vector2f(position.X + x, position.Y + y));
+                    points.Add(new Vector2f(position.X - shape.Origin.X + x, position.Y - shape.Origin.Y + y));
                     x = rectangleShape.Size.X;
                     y = 0;
                     RotateVector2d(ref x, ref y, angle);
-                    points.Add(new Vector2f(position.X + x, position.Y + y));
-                } else if(shape is CircleShape circleShape)
+                    points.Add(new Vector2f(position.X - shape.Origin.X + x, position.Y - shape.Origin.Y + y));
+                }
+                else if (shape is CircleShape circleShape)
                 {
                     // We approximate the circle with 36 points, the position is the top left corner, so we have to center it
                     for (int i = 0; i < 36; i++)
@@ -48,9 +50,9 @@ namespace TrySFML2
                     }
                 }
                 return points.AsEnumerable();
-
             }
         }
+
         internal Vector2f position;
         internal Vector2f velocity;
         internal Shape shape;
@@ -63,7 +65,7 @@ namespace TrySFML2
         {
             position = new Vector2f(aX, aY);
             shape = aShape;
-            if(shape.Position.X == 0)
+            if (shape.Position.X == 0)
             {
                 shape.Position = position;
             }
@@ -88,7 +90,7 @@ namespace TrySFML2
 
         virtual public Shape Update(double timeDiff)
         {
-            if(shape != null)
+            if (shape != null)
             {
                 position.X += velocity.X * (float)timeDiff / 1000f;
                 position.Y += velocity.Y * (float)timeDiff / 1000f;
@@ -99,14 +101,13 @@ namespace TrySFML2
 
         virtual public void Collision(Entity collided)
         {
-
         }
 
         virtual public void OnClick(int x, int y, Mouse.Button button)
         {
         }
 
-        virtual public Entity Create(int x,int y)
+        virtual public Entity Create(int x, int y)
         {
             throw new NotImplementedException();
         }
