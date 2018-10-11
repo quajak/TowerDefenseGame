@@ -1,5 +1,6 @@
 ﻿using SFML.Graphics;
 using SFML.System;
+using System;
 
 namespace TrySFML2
 {
@@ -109,6 +110,7 @@ namespace TrySFML2
             Collides.Add(typeof(MainBase));
             Collides.Add(typeof(Lazor));
             Collides.Add(typeof(Bomb));
+            Collides.Add(typeof(Explosion));
         }
 
         public Enemy(int aX, int aY, Color color, int size = 1) : this(aX, aY, size)
@@ -122,11 +124,17 @@ namespace TrySFML2
             switch (collided)
             {
                 case Bullet b:
-                    lock (Program.toChange)
+                    float damageDealt = Math.Min(Math.Min(b.damage, b.pierce), Size);
+                    b.pierce -= damageDealt;
+                    if (b.pierce <= 0)
                     {
-                        Program.toChange.Add(b);
+                        b.End();
+                        lock (Program.toChange)
+                        {
+                            Program.toChange.Add(b);
+                        }
                     }
-                    Pop((int)b.damage);
+                    Pop((int)damageDealt);
                     break;
 
                 case MainBase m:
@@ -139,6 +147,11 @@ namespace TrySFML2
 
                 case Bomb b:
                     Pop();
+                    break;
+
+                case Explosion e:
+                    if (e.Active)
+                        Pop(e.Damage);
                     break;
 
                 default:

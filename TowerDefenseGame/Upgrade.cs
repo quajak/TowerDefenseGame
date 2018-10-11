@@ -99,7 +99,7 @@ namespace TrySFML2
 
         private bool Available
         {
-            get => Program.Money > Upgrade.Cost;
+            get => Program.Money >= Upgrade.Cost;
         }
 
         public override Shape Update(double timeDiff)
