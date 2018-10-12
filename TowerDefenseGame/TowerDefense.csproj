@@ -81,6 +81,7 @@
   <ItemGroup>
     <Compile Include="Animation.cs" />
     <Compile Include="Projectile.cs" />
+    <Compile Include="Statistics.cs" />
     <Compile Include="Towers\Cannon.cs" />
     <Compile Include="E.cs" />
     <Compile Include="Enemy.cs" />

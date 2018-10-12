@@ -42,8 +42,10 @@ namespace TrySFML2
         public float pierce;
         private readonly Action<Vector2f> onFinish;
         private float distance = 0;
+        public Type CreatorType;
 
-        public Bullet(float aX, float aY, float vX, float vY, float maxDistance, float damage, float pierce, float bulletSize, Vector2f bulletTemplate, Action<Vector2f> OnFinish = null) : base(aX, aY, vX, vY, new RectangleShape(new Vector2f(bulletTemplate.X * bulletSize, bulletTemplate.Y * bulletSize)))
+        public Bullet(float aX, float aY, float vX, float vY, float maxDistance, float damage, float pierce, float bulletSize, Vector2f bulletTemplate,
+            Type Creator, Action<Vector2f> OnFinish = null) : base(aX, aY, vX, vY, new RectangleShape(new Vector2f(bulletTemplate.X * bulletSize, bulletTemplate.Y * bulletSize)))
         {
             shape.Origin = new Vector2f(bulletTemplate.X / 2 * bulletSize, bulletTemplate.Y / 2 * bulletSize);
             shape.Rotation = (float)(Math.Atan(vY / vX) / (2 * Math.PI) * 360);
@@ -51,6 +53,7 @@ namespace TrySFML2
             this.damage = damage;
             this.pierce = pierce;
             onFinish = OnFinish;
+            CreatorType = Creator;
         }
 
         public override Shape Update(double timeDiff)

@@ -351,6 +351,7 @@ namespace TrySFML2
                 }
                 Thread.Sleep(2);
             }
+            Statistics.WriteStats();
             //After game is over code
             Text gameOver = new Text("Game Over!", font, 64)
             {

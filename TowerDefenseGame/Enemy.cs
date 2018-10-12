@@ -134,7 +134,7 @@ namespace TrySFML2
                             Program.toChange.Add(b);
                         }
                     }
-                    Pop((int)damageDealt);
+                    Pop(b.CreatorType, (int)damageDealt);
                     break;
 
                 case MainBase m:
@@ -142,18 +142,19 @@ namespace TrySFML2
                     break;
 
                 case Lazor l:
-                    Pop();
+                    Pop(typeof(LazorGun));
                     break;
 
                 case Bomb b:
-                    Pop();
+                    Pop(typeof(Bomb));
                     break;
 
                 case Explosion e:
+                    damageDealt = Math.Min(e.Damage, Size);
                     if (e.Active)
                     {
                         Console.WriteLine("Explosion did damage!");
-                        Pop(e.Damage);
+                        Pop(typeof(Explosion), (int)damageDealt);
                     }
                     break;
 
@@ -162,8 +163,9 @@ namespace TrySFML2
             }
         }
 
-        public void Pop(int amount = 1)
+        public void Pop(Type dealer, int amount = 1)
         {
+            Statistics.AddDamage(amount, dealer);
             Size -= amount;
             if (size <= 0)
             {

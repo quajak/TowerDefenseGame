@@ -451,7 +451,8 @@ namespace TrySFML2
                             float scale = E.Scale(vX, vY, 1300);
                             //Rotate the gun
                             shape.Rotation = (float)Math.Atan2(vY, vX) / (2f * (float)Math.PI) * 360f - 90f;
-                            Program.toChange.Add(new Bullet(position.X, position.Y, vX * scale, vY * scale, 1300, amount.Value, amount.Value, BulletSize, new Vector2f(10, 2)));
+                            Program.toChange.Add(new Bullet(position.X, position.Y, vX * scale, vY * scale, 1300, amount.Value,
+                                amount.Value, BulletSize, new Vector2f(10, 2), typeof(MachineGun)));
                         }
                     }
             }

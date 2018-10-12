@@ -104,8 +104,9 @@ namespace TrySFML2
                             //Rotate the gun
                             shape.Rotation = (float)Math.Atan2(vY, vX) / (2f * (float)Math.PI) * 360f - 90f;
                             Bullet bullet = new Bullet(position.X, position.Y, vX * scale, vY * scale, 600, amount.Value, amount.Value,
-                                1, new Vector2f(6, 6), (p) => Program.toChange.Add(new Explosion(p.X - ExplosionSize.Value / 2, p.Y - ExplosionSize.Value / 2,
-                                ExplosionSize.Value, ExplosionDamage)));
+                                1, new Vector2f(6, 6), typeof(Cannon),
+                                (p) => Program.toChange.Add(new Explosion(p.X - ExplosionSize.Value / 2, p.Y - ExplosionSize.Value / 2,
+                                    ExplosionSize.Value, ExplosionDamage)));
                             bullet.shape.FillColor = Color.Black;
                             Program.toChange.Add(bullet);
                         }
