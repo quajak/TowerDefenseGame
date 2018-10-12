@@ -45,7 +45,7 @@ namespace TrySFML2
             this.speed = speed;
         }
 
-        public IntRect Play(float time)
+        public IntRect Play(float time, bool allowRepeat = false)
         {
             if (Playing)
             {
@@ -56,6 +56,8 @@ namespace TrySFML2
                     Finished = true;
                 }
             }
+            if (Finished && !allowRepeat)
+                return positions.Last();
             return positions[(int)(timePassed / speed)];
         }
     }

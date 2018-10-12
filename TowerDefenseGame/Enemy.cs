@@ -151,7 +151,10 @@ namespace TrySFML2
 
                 case Explosion e:
                     if (e.Active)
+                    {
+                        Console.WriteLine("Explosion did damage!");
                         Pop(e.Damage);
+                    }
                     break;
 
                 default:

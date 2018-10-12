@@ -8,6 +8,7 @@ namespace TrySFML2
     {
         private Animation animation;
         public bool Active = true;
+        private int activeCoutner = 2; //So it has one tick to do damage
         public readonly int Damage;
 
         public Explosion(float x, float y, float size, int damage) : base(x, y, new RectangleShape(new Vector2f(size, size)))
@@ -22,10 +23,14 @@ namespace TrySFML2
 
         public override Shape Update(double timeDiff)
         {
-            Active = false;
+            activeCoutner--;
+
+            Active = activeCoutner > 0;
             shape.TextureRect = animation.Play((float)timeDiff);
+
             if (animation.Finished)
                 Program.toChange.Add(this);
+
             return base.Update(timeDiff);
         }
     }
