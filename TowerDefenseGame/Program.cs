@@ -16,33 +16,30 @@ namespace TrySFML2
         public static GameEvent gameEvent = GameEvent.None;
         private static RenderWindow window;
 
-        public static List<Entity> objects = new List<Entity>();
-        public static List<Entity> toChange = new List<Entity>();
-        public static List<Entity> enemies = new List<Entity>();
-        public static List<Entity> playerBuildings = new List<Entity>();
-        public static List<Shape> shapes = new List<Shape>(); //keep for debug reasons
-        public static List<Text> texts = new List<Text>();
+        public static List<Entity> Objects = new List<Entity>();
+        public static List<Entity> ToChange = new List<Entity>();
+        public static List<Entity> Enemies = new List<Entity>();
+        public static List<Entity> PlayerBuildings = new List<Entity>();
+        public static List<Shape> Shapes = new List<Shape>(); //keep for debug reasons
+        public static List<Text> Texts = new List<Text>();
 
-        public static List<string> ConsoleLines = new List<string>();
-        public static string userInput = "";
+        public static Random Random = new Random();
 
-        public static Random random = new Random();
-
-        public static Vector2u gameSize;
+        public static Vector2u GameSize;
 
         public static Tower ToCreate;
-        public static Font font = new Font("./Resources/TitilliumWeb-Regular.ttf"); //from https://www.1001freefonts.com/titillium-web.font
+        public static Font Font = new Font("./Resources/TitilliumWeb-Regular.ttf"); //from https://www.1001freefonts.com/titillium-web.font
 
         private static int money = 10;
-        public static int moneyRate = 1;
+        public static int MoneyRate = 1;
 
-        private static Text moneyText = new Text("", font, 32)
+        private static Text moneyText = new Text("", Font, 32)
         {
             Position = new Vector2f(800, 10)
         };
 
         public static int EnemiesKilled = 0;
-        public static long timePlayed = 0;
+        public static long TimePlayed = 0;
 
         private static float baseEvolutionFactor = 1f;
 
@@ -51,13 +48,13 @@ namespace TrySFML2
         private static float timePassed = 0;
         private static float lastTimePlayed = 0;
 
-        public static TowerOverViewGUI towerGUI;
+        public static TowerOverViewGUI TowerGUI;
 
         public static float EvolutionFactor
         {
             get
             {
-                return baseEvolutionFactor * Math.Max(1f, (float)Math.Log10(EnemiesKilled + 1)) * Math.Max(1f, timePlayed / 60000f); //60 Sekunden bevor die Enemies wegen der Zeit rampen
+                return baseEvolutionFactor * Math.Max(1f, (float)Math.Log10(EnemiesKilled + 1)) * Math.Max(1f, TimePlayed / 60000f); //60 Sekunden bevor die Enemies wegen der Zeit rampen
             }
         }
 
@@ -67,7 +64,7 @@ namespace TrySFML2
             {
                 float evolutionFactor = EvolutionFactor;
                 float eP = baseEvolutionFactor * Math.Max(1f, (float)Math.Log10(EnemiesKilled + 1)) / evolutionFactor * 100;
-                float tP = baseEvolutionFactor * Math.Max(1f, timePlayed / 100000f) / evolutionFactor * 100;
+                float tP = baseEvolutionFactor * Math.Max(1f, TimePlayed / 100000f) / evolutionFactor * 100;
                 return $"{evolutionFactor.ToString("0.00")} - {eP.ToString("0")}% {tP.ToString("0")}%";
             }
         }
@@ -88,32 +85,32 @@ namespace TrySFML2
         private static void Main(string[] args)
         {
             window = new RenderWindow(VideoMode.DesktopMode, "Game");
-            gameSize = window.Size;
+            GameSize = window.Size;
             window.Closed += Window_Closed;
             window.GainedFocus += Window_GainedFocus;
             window.LostFocus += Window_LostFocus;
             window.MouseButtonPressed += Window_MouseButtonPressed;
 
             MainMenuGUI mainMenu = new MainMenuGUI();
-            objects.Add(mainMenu);
+            Objects.Add(mainMenu);
             while (window.IsOpen) //Pre game loop
             {
                 window.DispatchEvents(); // Here all event handlers are called
 
                 //Start rendering + entity updates
                 window.Clear(Color.Blue);
-                objects = objects.OrderByDescending(o => o.renderLayer).ToList();
-                for (int i = 0; i < objects.Count; i++)
+                Objects = Objects.OrderByDescending(o => o.renderLayer).ToList();
+                for (int i = 0; i < Objects.Count; i++)
                 {
-                    Entity item = objects[i];
+                    Entity item = Objects[i];
                     window.Draw(item.Update(0));
                 }
 
-                foreach (var item in shapes)
+                foreach (var item in Shapes)
                 {
                     window.Draw(item);
                 }
-                foreach (var text in texts)
+                foreach (var text in Texts)
                 {
                     window.Draw(text);
                 }
@@ -122,26 +119,26 @@ namespace TrySFML2
                 if (gameEvent == GameEvent.Next)
                 {
                     mainMenu.Delete();
-                    objects.Remove(mainMenu);
+                    Objects.Remove(mainMenu);
                     break;
                 }
             }
             // now update to fit difficulty
             money = mainMenu.difficulty * 8;
             baseEvolutionFactor = (mainMenu.difficulty + 1) / 2f;
-            moneyRate = (mainMenu.difficulty + 2) / 3;
+            MoneyRate = (mainMenu.difficulty + 2) / 3;
 
-            towerGUI = new TowerOverViewGUI();
-            objects.Add(towerGUI);
-            objects.Add(new MenuGUI());
+            TowerGUI = new TowerOverViewGUI();
+            Objects.Add(TowerGUI);
+            Objects.Add(new MenuGUI());
 
-            Text fpsCounter = new Text("", font, 32)
+            Text fpsCounter = new Text("", Font, 32)
             {
                 Color = Color.Red,
                 Position = new Vector2f(1000, 10)
             };
 
-            Text evolutionFactorText = new Text("", font, 32)
+            Text evolutionFactorText = new Text("", Font, 32)
             {
                 Color = Color.Red,
                 Position = new Vector2f(1200, 10)
@@ -154,31 +151,31 @@ namespace TrySFML2
                 int num = 0;
                 if (!MainBase.Available && !GameEnded)
                 {
-                    lock (toChange)
-                        lock (enemies)
-                            lock (playerBuildings) // cam this cause a deadlock? Maybe - most likely not
+                    lock (ToChange)
+                        lock (Enemies)
+                            lock (PlayerBuildings) // cam this cause a deadlock? Maybe - most likely not
                             {
                                 #region Spawn Regular Enemies
 
-                                float val2 = 1.2f * (float)(Math.Sin((timePlayed / 1000) % 30f / 30f * 2f * (float)Math.PI) + 1f); //Modify the multiplier until it works well
-                                num = random.Next(1 + Math.Max(1, (int)(EvolutionFactor * val2)));
+                                float val2 = 1.2f * (float)(Math.Sin((TimePlayed / 1000) % 30f / 30f * 2f * (float)Math.PI) + 1f); //Modify the multiplier until it works well
+                                num = Random.Next(1 + Math.Max(1, (int)(EvolutionFactor * val2)));
                                 for (int i = 0; i < num; i++)
                                 {
-                                    int eSize = random.Next(1, (int)EvolutionFactor);
+                                    int eSize = Random.Next(1, (int)EvolutionFactor);
                                     int tries = 0;
                                     bool spawnInField = false; //We normally spawn the enemies at the borders for a cooler effect but if you want to play with them spawning everywhere set this to true
                                     if (spawnInField)
                                     {
                                         while (tries++ < 100) // So we dont get stuck for ever
                                         {
-                                            int posX = random.Next((int)gameSize.X);
-                                            int posY = random.Next((int)gameSize.Y);
-                                            var leastDistance = playerBuildings.Select(b => b.position).Select(p => E.Distance(p, new Vector2f(posX, posY))).Min();
+                                            int posX = Random.Next((int)GameSize.X);
+                                            int posY = Random.Next((int)GameSize.Y);
+                                            var leastDistance = PlayerBuildings.Select(b => b.position).Select(p => E.Distance(p, new Vector2f(posX, posY))).Min();
                                             if (leastDistance > 100) // TOOO: different towers have different regions of effect
                                             {
                                                 Enemy item1 = new Enemy(posX, posY, eSize);
-                                                enemies.Add(item1);
-                                                toChange.Add(item1);
+                                                Enemies.Add(item1);
+                                                ToChange.Add(item1);
                                                 break;
                                             }
                                         }
@@ -188,21 +185,21 @@ namespace TrySFML2
                                         //We spawn on the border
                                         int posX = 0;
                                         int posY = 0;
-                                        if (random.NextBool())
+                                        if (Random.NextBool())
                                         {
                                             //spawn on x border
-                                            posX = random.NextBool() ? 0 : (int)gameSize.X;
-                                            posY = random.Next((int)gameSize.Y);
+                                            posX = Random.NextBool() ? 0 : (int)GameSize.X;
+                                            posY = Random.Next((int)GameSize.Y);
                                         }
                                         else
                                         {
                                             //spawn on y border
-                                            posX = random.Next((int)gameSize.X);
-                                            posY = random.NextBool() ? 0 : (int)gameSize.Y;
+                                            posX = Random.Next((int)GameSize.X);
+                                            posY = Random.NextBool() ? 0 : (int)GameSize.Y;
                                         }
                                         Enemy item1 = new Enemy(posX, posY, eSize);
-                                        enemies.Add(item1);
-                                        toChange.Add(item1);
+                                        Enemies.Add(item1);
+                                        ToChange.Add(item1);
                                     }
                                 }
 
@@ -211,8 +208,8 @@ namespace TrySFML2
                                 #region Spawn Boss
 
                                 //Spawn boss every 60s
-                                timePassed += timePlayed - lastTimePlayed;
-                                lastTimePlayed = timePlayed;
+                                timePassed += TimePlayed - lastTimePlayed;
+                                lastTimePlayed = TimePlayed;
                                 if (timePassed > timeBetweenBosses)
                                 {
                                     timePassed = 0;
@@ -222,21 +219,21 @@ namespace TrySFML2
                                     int tries = 0;
                                     while (tries++ < 100) // So we dont get stuck for ever
                                     {
-                                        int posX = random.Next((int)gameSize.X);
-                                        int posY = random.Next((int)gameSize.Y);
-                                        var leastDistance = playerBuildings.Select(b => b.position).Select(p => E.Distance(p, new Vector2f(posX, posY))).Min();
+                                        int posX = Random.Next((int)GameSize.X);
+                                        int posY = Random.Next((int)GameSize.Y);
+                                        var leastDistance = PlayerBuildings.Select(b => b.position).Select(p => E.Distance(p, new Vector2f(posX, posY))).Min();
                                         if (leastDistance > 100) // TOOO: different towers have different regions of effect
                                         {
                                             Enemy boss = new Enemy(posX, posY, new Color(0, 0, 0), bossSize);
-                                            enemies.Add(boss);
-                                            toChange.Add(boss);
+                                            Enemies.Add(boss);
+                                            ToChange.Add(boss);
                                             //Spawn minions close to the boss
                                             for (int i = 1; i < bossSize; i++)
                                             {
                                                 int spread = 16;
-                                                Enemy item1 = new Enemy(posX + random.Next(bossSize * spread) - bossSize * spread / 2, posY + random.Next(bossSize * spread) - bossSize * spread / 2, new Color(0, 0, 0), i);
-                                                enemies.Add(item1);
-                                                toChange.Add(item1);
+                                                Enemy item1 = new Enemy(posX + Random.Next(bossSize * spread) - bossSize * spread / 2, posY + Random.Next(bossSize * spread) - bossSize * spread / 2, new Color(0, 0, 0), i);
+                                                Enemies.Add(item1);
+                                                ToChange.Add(item1);
                                             }
                                             bossSize += 3;
                                             break;
@@ -247,7 +244,7 @@ namespace TrySFML2
                                 #endregion Spawn Boss
                             }
                 }
-                Console.WriteLine($"Debug at {timePlayed / 1000} - Enemies: {enemies.Count} + {num}- Killed: {EnemiesKilled} - Total Entities: {objects.Count} - Evolution Factor: {EvolutionFactorString}");
+                Console.WriteLine($"Debug at {TimePlayed / 1000} - Enemies: {Enemies.Count} + {num}- Killed: {EnemiesKilled} - Total Entities: {Objects.Count} - Evolution Factor: {EvolutionFactorString}");
             }, null, 1000, 1000);
 
             int frameLength = 100; // When two few frames are used, the fluctuations make it unreadable
@@ -258,7 +255,7 @@ namespace TrySFML2
             //Setup background graphics
             Sprite background = new Sprite(new Texture("./Resources/background.png"));
             background.Texture.Repeated = true;
-            background.TextureRect = new IntRect(0, 0, (int)gameSize.X, (int)gameSize.Y);
+            background.TextureRect = new IntRect(0, 0, (int)GameSize.X, (int)GameSize.Y);
 
             while (window.IsOpen) // Main game loop
             {
@@ -272,31 +269,31 @@ namespace TrySFML2
 
                 if (!MainBase.Available) //While the game is running
                 {
-                    timePlayed += (long)timeSpan.TotalMilliseconds;
+                    TimePlayed += (long)timeSpan.TotalMilliseconds;
                 }
 
                 //Start rendering + entity updates
                 window.Clear(Color.Blue);
 
                 window.Draw(background);
-                objects = objects.OrderBy(o => o.renderLayer).ToList();
-                for (int i = 0; i < objects.Count; i++)
+                Objects = Objects.OrderBy(o => o.renderLayer).ToList();
+                for (int i = 0; i < Objects.Count; i++)
                 {
-                    Entity item = objects[i];
+                    Entity item = Objects[i];
                     window.Draw(item.Update(totalMilliseconds));
                 }
 
-                foreach (var item in shapes)
+                foreach (var item in Shapes)
                 {
                     window.Draw(item);
                 }
 
                 //Do collision detection
-                foreach (var item in objects)
+                foreach (var item in Objects)
                 {
                     foreach (var type in item.Collides)
                     {
-                        var possible = from i in objects
+                        var possible = from i in Objects
                                        where i.GetType() == type
                                        select i;
                         foreach (var other in possible)
@@ -309,20 +306,22 @@ namespace TrySFML2
                     }
                 }
 
-                foreach (var text in texts)
+                foreach (var text in Texts)
                 {
                     window.Draw(text);
                 }
 
                 //now handle additions or deletions
-                lock (toChange)
+                lock (ToChange)
                 {
-                    foreach (var item in toChange)
+                    if (ToChange.Count != ToChange.Distinct().Count())
+                        throw new Exception("Dublicates exist in to change!");
+                    foreach (var item in ToChange)
                     {
-                        if (objects.Exists(x => x == item)) objects.Remove(item);
-                        else objects.Add(item);
+                        if (Objects.Exists(x => x == item)) Objects.Remove(item);
+                        else Objects.Add(item);
                     }
-                    toChange.Clear();
+                    ToChange.Clear();
                 }
 
                 //Get FPS counter
@@ -349,13 +348,21 @@ namespace TrySFML2
                 {
                     break;
                 }
+
+                //Debug checks
+                if(Enemies.Exists(e => (e as Enemy).Size == 0))
+                {
+                    throw new Exception("Enemy with 0 size found!");
+                }
+
+
                 Thread.Sleep(2);
             }
             Statistics.WriteStats();
             //After game is over code
-            Text gameOver = new Text("Game Over!", font, 64)
+            Text gameOver = new Text("Game Over!", Font, 64)
             {
-                Position = new Vector2f(gameSize.X / 2 - 100, gameSize.Y / 2 - 64),
+                Position = new Vector2f(GameSize.X / 2 - 100, GameSize.Y / 2 - 64),
                 Color = Color.Red
             };
             window.Display();
@@ -365,9 +372,9 @@ namespace TrySFML2
                 window.DispatchEvents();
                 window.Clear(Color.Blue);
                 window.Draw(background);
-                for (int i = 0; i < objects.Count; i++)
+                for (int i = 0; i < Objects.Count; i++)
                 {
-                    Entity item = objects[i];
+                    Entity item = Objects[i];
                     window.Draw(item.Update(0));
                 }
                 window.Draw(gameOver);
@@ -390,8 +397,8 @@ namespace TrySFML2
 
         public static bool IsFree(float X, float Y, float Width, float Height)
         {
-            Entity entity = new Entity(X - Width / 2, Y - Height / 2, new RectangleShape(new Vector2f(Width, Height)));
-            foreach (var en in objects)
+            Entity entity = new Entity(X, Y, new RectangleShape(new Vector2f(Width, Height)));
+            foreach (var en in Objects)
             {
                 if (en.blocking && PolygonCollision(en, entity))
                     return false;
@@ -402,7 +409,7 @@ namespace TrySFML2
         public static bool IsFree(float x, float y, float radius)
         {
             Entity entity = new Entity(x - radius / 2, y - radius / 2, new CircleShape(radius));
-            foreach (var en in objects)
+            foreach (var en in Objects)
             {
                 if (en.blocking && PolygonCollision(en, entity))
                     return false;
@@ -428,7 +435,8 @@ namespace TrySFML2
                 }
                 else if (item.shape is CircleShape circleShape)
                 {
-                    if (circleShape.Radius > E.Distance(new Vector2f(X, Y), item.position))
+                    //Cheap way to fix the offset of the visible circle from its actual position
+                    if (circleShape.Radius > E.Distance(new Vector2f(X - circleShape.Radius, Y - circleShape.Radius), item.position))
                     {
                         if (!(item is GUI g) || g.visible)
                         {
@@ -442,26 +450,26 @@ namespace TrySFML2
 
         private static void Window_MouseButtonPressed(object sender, MouseButtonEventArgs e)
         {
-            var clicked = GetEntityAt(e.X, e.Y, objects.Where(o => o.blocking).ToList());
+            var clicked = GetEntityAt(e.X, e.Y, Objects.Where(o => o.blocking).ToList());
 
             if (clicked is null)
             {
                 if (ToCreate != null && (!(ToCreate is MachineGun) || MachineGun.Available))
                 {
-                    if (ToCreate.cost <= money && IsFree(e.X, e.Y, ToCreate.shape))
+                    if (ToCreate.Cost <= money && IsFree(e.X, e.Y, ToCreate.shape))
                     {
                         Entity item = ToCreate.Create(e.X - 5, e.Y - 5);
-                        lock (playerBuildings)
+                        lock (PlayerBuildings)
                         {
-                            playerBuildings.Add(item);
+                            PlayerBuildings.Add(item);
                         }
-                        toChange.Add(item);
+                        ToChange.Add(item);
                     }
                 }
-                if (towerGUI != null)
+                if (TowerGUI != null)
                 {
-                    towerGUI.visible = false;
-                    towerGUI.Selected = null;
+                    TowerGUI.visible = false;
+                    TowerGUI.Selected = null;
                 }
             }
             else

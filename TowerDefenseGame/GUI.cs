@@ -105,7 +105,7 @@ namespace TrySFML2
         {
             shape = null;
             texts = Wrap(content, font, maxWidth, x, y, offset);
-            Program.texts.AddRange(texts);
+            Program.Texts.AddRange(texts);
             renderLayer = 1;
             this.font = font;
             this.maxWidth = maxWidth;
@@ -123,8 +123,8 @@ namespace TrySFML2
             string v = words[0];
             while (words.Count != 0)
             {
-                active = new Text("", Program.font, (uint)font);
-                nextActive = new Text(v, Program.font, (uint)font);
+                active = new Text("", Program.Font, (uint)font);
+                nextActive = new Text(v, Program.Font, (uint)font);
                 while (nextActive.GetLocalBounds().Width < width && words.Count > 0)
                 {
                     active.DisplayedString = nextActive.DisplayedString;
@@ -154,9 +154,9 @@ namespace TrySFML2
             get => content; set
             {
                 content = value;
-                texts.ForEach(t => Program.texts.Remove(t));
+                texts.ForEach(t => Program.Texts.Remove(t));
                 texts = Wrap(content, font, maxWidth, position.X, position.Y, offset);
-                texts.ForEach(t => Program.texts.Add(t));
+                texts.ForEach(t => Program.Texts.Add(t));
             }
         }
 
@@ -178,7 +178,7 @@ namespace TrySFML2
 
         public override void Delete()
         {
-            texts.ForEach(t => Program.texts.RemoveAll(p => p.DisplayedString == t.DisplayedString));
+            texts.ForEach(t => Program.Texts.RemoveAll(p => p.DisplayedString == t.DisplayedString));
         }
     }
 
@@ -236,46 +236,46 @@ namespace TrySFML2
             GUIField item = new GUIField(80, 0, 20, 20, Color.Red, "Hide");
             item.renderLayer = 90;
             parts.Add(item);
-            Program.objects.Add(item);
+            Program.Objects.Add(item);
             item = new GUIField(20, 20, 60, 60, Color.White, "Controller");
             item.renderLayer = 90;
             item.shape.Texture = new Texture("./Resources/mainBase.jpg");
             parts.Add(item);
-            Program.objects.Add(item);
+            Program.Objects.Add(item);
             item = new GUIField(20, 100, 60, 60, Color.White, "MachineGun");
             item.renderLayer = 90;
             item.shape.Texture = new Texture("./Resources/MachineGun.png");
             parts.Add(item);
-            Program.objects.Add(item);
+            Program.Objects.Add(item);
             item = new GUIField(20, 180, 60, 60, Color.White, "LazorGun");
             item.renderLayer = 90;
             item.shape.Texture = new Texture("./Resources/LazorGun.png");
             parts.Add(item);
-            Program.objects.Add(item);
+            Program.Objects.Add(item);
             item = new GUIField(20, 260, 60, 60, Color.Black, "Bomb");
             item.renderLayer = 90;
             parts.Add(item);
-            Program.objects.Add(item);
+            Program.Objects.Add(item);
             item = new GUIField(20, 340, 60, 60, Color.White, "Bank");
             item.renderLayer = 1900;
             item.shape.Texture = new Texture("./Resources/BankTower.png");
             parts.Add(item);
-            Program.objects.Add(item);
+            Program.Objects.Add(item);
             item = new GUIField(20, 420, 60, 60, Color.White, "IceTower");
             item.renderLayer = 90;
             item.shape.Texture = new Texture("./Resources/IceTower.png");
             parts.Add(item);
-            Program.objects.Add(item);
-            item = new GUIField(20, 500, 60, 60, Color.White, "Deselect");
+            Program.Objects.Add(item);
+            item = new GUIField(20, 580, 60, 60, Color.White, "Deselect");
             item.renderLayer = 90;
             item.shape.Texture = new Texture("./Resources/DeselectTool.png");
             parts.Add(item);
-            Program.objects.Add(item);
-            item = new GUIField(20, 580, 60, 60, Color.White, "Cannon");
+            Program.Objects.Add(item);
+            item = new GUIField(20, 500, 60, 60, Color.White, "Cannon");
             item.renderLayer = 90;
             item.shape.Texture = new Texture("./Resources/Cannon.png");
             parts.Add(item);
-            Program.objects.Add(item);
+            Program.Objects.Add(item);
         }
 
         public override void OnClick(int x, int y, Mouse.Button button)
@@ -289,7 +289,7 @@ namespace TrySFML2
                     switch (field.name)
                     {
                         case "Hide":
-                            Program.objects.RemoveAll(o => parts.Exists(p => p == o as GUI));
+                            Program.Objects.RemoveAll(o => parts.Exists(p => p == o as GUI));
                             size = Size;
                             size.X = 10;
                             Size = size;
@@ -326,6 +326,7 @@ namespace TrySFML2
                             break;
 
                         case "Deselect":
+                            Program.TowerGUI.Selected = null;
                             Program.ToCreate = null;
                             break;
 
@@ -344,7 +345,7 @@ namespace TrySFML2
                     if (size.X == 10)
                     {
                         size.X = 100;
-                        Program.objects.AddRange(parts);
+                        Program.Objects.AddRange(parts);
                     }
                     Size = size;
 
@@ -406,9 +407,9 @@ namespace TrySFML2
         private List<GUI> parts = new List<GUI>();
         public Tower Selected = null;
 
-        public TowerOverViewGUI() : base(Program.gameSize.X - 200, 0, 200, Program.gameSize.Y)
+        public TowerOverViewGUI() : base(Program.GameSize.X - 200, 0, 200, Program.GameSize.Y)
         {
-            float x = Program.gameSize.X;
+            float x = Program.GameSize.X;
             shape.FillColor = new Color(110, 114, 114, 200);
             visible = false;
             GUIText gText = new GUIText(x - 190, 10, "Name", Color.Black, 20, "Name", 180);
@@ -424,24 +425,24 @@ namespace TrySFML2
             var toRemove = parts.Where(p => p.name.Contains("upgrade")).ToList();
             toRemove.ForEach(p => p.Delete());
             toRemove.ForEach(p => parts.Remove(p));
-            toRemove.ForEach(p => Program.objects.Remove(p));
+            toRemove.ForEach(p => Program.Objects.Remove(p));
             var rI = parts.FirstOrDefault(p => p.name == "RangeIndicator");
             if (rI != null)
             {
                 parts.Remove(rI);
-                Program.objects.Remove(rI);
+                Program.Objects.Remove(rI);
             }
             if (Selected != null)
             {
                 GUIText t = parts.First(p => p.name == "Name") as GUIText;
-                t.Content = Selected.name;
+                t.Content = Selected.Name;
                 t = parts.First(p => p.name == "Desc") as GUIText;
-                t.Content = Selected.description;
-                float x = Program.gameSize.X - 190;
+                t.Content = Selected.Description;
+                float x = Program.GameSize.X - 190;
                 float y = UpgradeGUI.Height;
-                if (Selected.range.Value != 0)
+                if (Selected.Range.Value != 0)
                 {
-                    GUICircle rangeIndicator = new GUICircle(Selected.position.X, Selected.position.Y, Selected.range.Value, new Color(128, 125, 125, 100),
+                    GUICircle rangeIndicator = new GUICircle(Selected.position.X, Selected.position.Y, Selected.Range.Value, new Color(128, 125, 125, 100),
                         Color.Black, 2, "RangeIndicator")
                     {
                         clickLayer = 100,
@@ -449,15 +450,15 @@ namespace TrySFML2
                         blocking = false
                     };
                     parts.Add(rangeIndicator);
-                    Program.objects.Add(rangeIndicator);
+                    Program.Objects.Add(rangeIndicator);
                 }
-                foreach (var upgrade in Selected.available)
+                foreach (var upgrade in Selected.AvailableUpgrades)
                 {
                     UpgradeGUI gU = new UpgradeGUI(x, y, upgrade, $"upgrade{upgrade.Name}");
                     gU.Click += GU_Click;
                     y += UpgradeGUI.Height + 10;
                     parts.Add(gU);
-                    Program.objects.Add(gU);
+                    Program.Objects.Add(gU);
                 }
             }
             else
@@ -475,9 +476,9 @@ namespace TrySFML2
         private void GU_Click(object sender, MouseButtonEventArgs e)
         {
             Upgrade u = (sender as UpgradeGUI).Upgrade;
-            Selected.installed.Add(u);
-            Selected.available.Remove(u);
-            Selected.available.AddRange(u.Unlocks);
+            Selected.Installed.Add(u);
+            Selected.AvailableUpgrades.Remove(u);
+            Selected.AvailableUpgrades.AddRange(u.Unlocks);
             Program.Money -= u.Cost;
             u.Install(Selected);
         }

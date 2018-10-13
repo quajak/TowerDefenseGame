@@ -1,6 +1,7 @@
 ﻿using SFML.Graphics;
 using SFML.System;
 using System;
+using System.Collections.Generic;
 
 namespace TrySFML2
 {
@@ -11,6 +12,9 @@ namespace TrySFML2
         private int size;
         private bool colorSet = false;
         private Stat speed;
+        public readonly Vector2f spawnPoint;
+        private List<Type> damagedBy = new List<Type>();
+        bool _removed = false;
 
         public float DistanceToGoal
         {
@@ -36,7 +40,7 @@ namespace TrySFML2
                     shape = s;
                     if (!colorSet)
                     {
-                        shape.FillColor = new Color((byte)Program.random.Next(255), (byte)Program.random.Next(255), (byte)Program.random.Next(255));
+                        shape.FillColor = new Color((byte)Program.Random.Next(255), (byte)Program.Random.Next(255), (byte)Program.Random.Next(255));
                     }
                 }
             }
@@ -92,8 +96,8 @@ namespace TrySFML2
             renderLayer = 1;
             if (Program.mainBase is null)
             {
-                VX = new Stat((float)Program.random.NextDouble() - 0.5f);
-                VY = new Stat((float)Program.random.NextDouble() - 0.5f);
+                VX = new Stat((float)Program.Random.NextDouble() - 0.5f);
+                VY = new Stat((float)Program.Random.NextDouble() - 0.5f);
             }
             else
             {
@@ -106,6 +110,7 @@ namespace TrySFML2
             VY.baseValue *= s;
             velocity = new Vector2f(VX.Value, VY.Value);
             Size = size;
+            spawnPoint = position;
             Collides.Add(typeof(Bullet));
             Collides.Add(typeof(MainBase));
             Collides.Add(typeof(Lazor));
@@ -124,20 +129,32 @@ namespace TrySFML2
             switch (collided)
             {
                 case Bullet b:
+                    if (_removed)
+                        break;
                     float damageDealt = Math.Min(Math.Min(b.damage, b.pierce), Size);
                     b.pierce -= damageDealt;
                     if (b.pierce <= 0)
                     {
-                        b.End();
-                        lock (Program.toChange)
+                        if (!Program.ToChange.Contains(b))
                         {
-                            Program.toChange.Add(b);
+                            b.End();
+                            lock (Program.ToChange)
+                            {
+                                Program.ToChange.Add(b);
+                            }
                         }
                     }
                     Pop(b.CreatorType, (int)damageDealt);
                     break;
 
                 case MainBase m:
+                    Console.WriteLine(" --- Killer Info --- ");
+                    Console.WriteLine($"Spawnpoint: {spawnPoint.X}, {spawnPoint.Y}");
+                    Console.WriteLine($"Current position: {position.X}, {position.Y}");
+                    Console.WriteLine($"Size: {size}");
+                    Console.WriteLine($"Speed: {Speed.Value}");
+                    Console.WriteLine($"Affected by: {string.Join(" ", damagedBy.ConvertAll(d => d.Name))}");
+                    Console.WriteLine(" ------------------- ");
                     Program.GameEnded = true;
                     break;
 
@@ -153,7 +170,6 @@ namespace TrySFML2
                     damageDealt = Math.Min(e.Damage, Size);
                     if (e.Active)
                     {
-                        Console.WriteLine("Explosion did damage!");
                         Pop(typeof(Explosion), (int)damageDealt);
                     }
                     break;
@@ -166,13 +182,18 @@ namespace TrySFML2
         public void Pop(Type dealer, int amount = 1)
         {
             Statistics.AddDamage(amount, dealer);
+            damagedBy.Add(dealer);
             Size -= amount;
-            if (size <= 0)
+            if (Size <= 0)
             {
-                lock (Program.toChange)
+                lock (Program.ToChange)
                 {
-                    Program.toChange.Add(this);
-                    Program.enemies.Remove(this);
+                    if (!Program.ToChange.Contains(this))
+                    {
+                        _removed = true;
+                        Program.ToChange.Add(this);
+                        Program.Enemies.Remove(this);
+                    }
                 }
                 Program.EnemiesKilled++;
             }
@@ -180,10 +201,10 @@ namespace TrySFML2
 
         public override Shape Update(double timeDiff)
         {
-            if ((position.X < 0 || position.X > Program.gameSize.X) || (position.Y < 0 || position.Y > Program.gameSize.Y))
+            if ((position.X < 0 || position.X > Program.GameSize.X) || (position.Y < 0 || position.Y > Program.GameSize.Y))
             {
-                Program.toChange.Add(this);
-                Program.enemies.Remove(this);
+                Program.ToChange.Add(this);
+                Program.Enemies.Remove(this);
             }
             return base.Update(timeDiff);
         }

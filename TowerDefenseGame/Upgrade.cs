@@ -34,18 +34,18 @@ namespace TrySFML2
             switch (Type)
             {
                 case UpdateType.Speed:
-                    Console.WriteLine($"Upgrading speed of {tower.name} by {Name}");
-                    tower.attackSpeed.modifiers.Add(Modifier);
+                    Console.WriteLine($"Upgrading speed of {tower.Name} by {Name}");
+                    tower.AttackSpeed.modifiers.Add(Modifier);
                     break;
 
                 case UpdateType.Amount:
-                    Console.WriteLine($"Upgrading amount of {tower.name} by {Name}");
-                    tower.amount.modifiers.Add(Modifier);
+                    Console.WriteLine($"Upgrading amount of {tower.Name} by {Name}");
+                    tower.Amount.modifiers.Add(Modifier);
                     break;
 
                 case UpdateType.Range:
-                    Console.WriteLine($"Upgrading range of {tower.name} by {Name}");
-                    tower.range.modifiers.Add(Modifier);
+                    Console.WriteLine($"Upgrading range of {tower.Name} by {Name}");
+                    tower.Range.modifiers.Add(Modifier);
                     break;
 
                 default:
@@ -66,6 +66,8 @@ namespace TrySFML2
         public override void Install(Tower tower)
         {
             install.Invoke(tower);
+            if (Modifier != null)
+                base.Install(tower);
         }
     }
 
@@ -113,7 +115,7 @@ namespace TrySFML2
         public override void Delete()
         {
             parts.ForEach(p => p.Delete());
-            parts.ForEach(p => Program.objects.Remove(p));
+            parts.ForEach(p => Program.Objects.Remove(p));
             base.Delete();
         }
     }

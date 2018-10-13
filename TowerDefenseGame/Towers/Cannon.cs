@@ -17,12 +17,14 @@ namespace TrySFML2
         public int ExplosionDamage = 1;
 
         public Cannon(float x, float y, bool buy = false) : base(x, y, new RectangleShape(new Vector2f(20, 20)), _cost, "Cannon", "Shoot bullets which explode",
-            200, 2, 400)
+            200, 2, 500)
         {
             if (buy)
                 Program.Money -= _cost;
             shape.Texture = new Texture("./Resources/cannon.png");
             shape.Origin = new Vector2f(10, 10);
+            position = new Vector2f(position.X + 10, position.Y + 10);
+            shape.Position = position;
             CustomUpgrade pierce = new CustomUpgrade(null, 5, "Pierce I", "Each shell has 1 more pierce", (t) => (t as Cannon).ExtraPierce += 1)
             {
                 Unlocks =
@@ -58,9 +60,9 @@ namespace TrySFML2
                     }
                 }
             };
-            available.Add(pierce);
-            available.Add(explosionSize);
-            available.Add(rangeI);
+            AvailableUpgrades.Add(pierce);
+            AvailableUpgrades.Add(explosionSize);
+            AvailableUpgrades.Add(rangeI);
         }
 
         public override Entity Create(int x, int y)
@@ -83,12 +85,12 @@ namespace TrySFML2
             attackTime -= (float)timeDiff;
             if (attackTime < 0)
             {
-                attackTime = attackSpeed.Value;
-                lock (Program.toChange)
-                    lock (Program.enemies)
+                attackTime = AttackSpeed.Value;
+                lock (Program.ToChange)
+                    lock (Program.Enemies)
                     {
-                        var possible = from enemy in Program.enemies
-                                       where E.Distance(this, enemy) < range.Value
+                        var possible = from enemy in Program.Enemies
+                                       where E.Distance(this, enemy) < Range.Value
                                        select enemy;
                         var list = possible.OrderBy(x => E.Distance(this, x)).Take(1).ToList();
                         if (list.Count != 0)
@@ -96,19 +98,19 @@ namespace TrySFML2
                             Entity item = list[0];
                             //Generate bullet
                             var size = (shape as RectangleShape).Size;
-                            float dX = item.position.X - (position.X + Program.random.Next(2) - 1);
-                            float dY = item.position.Y - (position.Y + Program.random.Next(2) - 1);
-                            float vX = dX / Math.Max(Math.Abs(dX), Math.Abs(dY)) + (float)(Program.random.NextDouble() - 0.5d) / 4f;
-                            float vY = dY / Math.Max(Math.Abs(dX), Math.Abs(dY)) + (float)(Program.random.NextDouble() - 0.5d) / 4f;
+                            float dX = item.position.X - (position.X + Program.Random.Next(2) - 1);
+                            float dY = item.position.Y - (position.Y + Program.Random.Next(2) - 1);
+                            float vX = dX / Math.Max(Math.Abs(dX), Math.Abs(dY)) + (float)(Program.Random.NextDouble() - 0.5d) / 4f;
+                            float vY = dY / Math.Max(Math.Abs(dX), Math.Abs(dY)) + (float)(Program.Random.NextDouble() - 0.5d) / 4f;
                             float scale = E.Scale(vX, vY, 800);
                             //Rotate the gun
                             shape.Rotation = (float)Math.Atan2(vY, vX) / (2f * (float)Math.PI) * 360f - 90f;
-                            Bullet bullet = new Bullet(position.X, position.Y, vX * scale, vY * scale, 600, amount.Value, amount.Value,
+                            Bullet bullet = new Bullet(position.X, position.Y, vX * scale, vY * scale, 600, Amount.Value, Amount.Value,
                                 1, new Vector2f(6, 6), typeof(Cannon),
-                                (p) => Program.toChange.Add(new Explosion(p.X - ExplosionSize.Value / 2, p.Y - ExplosionSize.Value / 2,
+                                (p) => Program.ToChange.Add(new Explosion(p.X - ExplosionSize.Value / 2, p.Y - ExplosionSize.Value / 2,
                                     ExplosionSize.Value, ExplosionDamage)));
                             bullet.shape.FillColor = Color.Black;
-                            Program.toChange.Add(bullet);
+                            Program.ToChange.Add(bullet);
                         }
                     }
             }

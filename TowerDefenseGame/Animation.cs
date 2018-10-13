@@ -12,7 +12,7 @@ namespace TrySFML2
     {
         public static Dictionary<string, Texture> preLoadedTextures = new Dictionary<string, Texture>
         {
-            {"Explosion", new Texture("./Resources/explosion.png") }
+            {"Explosion", new Texture("./Resources/explosion.png") } //http://animalia-life.club/other/animated-explosion-sprite.html
         };
 
         public Texture Texture;
@@ -50,7 +50,7 @@ namespace TrySFML2
             if (Playing)
             {
                 timePassed += time;
-                if (timePassed > frameNumber * speed)
+                if (timePassed >= frameNumber * speed)
                 {
                     timePassed = 0;
                     Finished = true;
@@ -59,6 +59,34 @@ namespace TrySFML2
             if (Finished && !allowRepeat)
                 return positions.Last();
             return positions[(int)(timePassed / speed)];
+        }
+    }
+
+    class IceCircle : Entity
+    {
+        private readonly float radius;
+
+        public IceCircle(float x, float y, float radius) : base(x,y, new CircleShape(0))
+        {
+            renderLayer = 10;
+            shape.Position = new Vector2f(x, y);
+            shape.FillColor = new Color(0, 0, 0, 0);
+            shape.OutlineColor = new Color(80, 224, 240);
+            shape.OutlineThickness = 2;
+            this.radius = radius;
+        }
+
+        public override Shape Update(double timeDiff)
+        {
+            float v = (float)timeDiff / 200f * radius;
+            (shape as CircleShape).Radius += v;
+            position = new Vector2f(position.X - v, position.Y - v);
+            shape.Position = position;
+            if ((shape as CircleShape).Radius > radius)
+                lock (Program.ToChange)
+                    Program.ToChange.Add(this);
+
+            return shape;
         }
     }
 }
