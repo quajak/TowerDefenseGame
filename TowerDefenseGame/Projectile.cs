@@ -2,7 +2,7 @@
 using SFML.System;
 using System;
 
-namespace TrySFML2
+namespace TowerDefenseGame
 {
     internal class Explosion : Entity
     {

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TrySFML2
+namespace TowerDefenseGame
 {
     internal abstract class GUI : Entity
     {
@@ -266,7 +266,11 @@ namespace TrySFML2
             item.shape.Texture = new Texture("./Resources/IceTower.png");
             parts.Add(item);
             Program.Objects.Add(item);
-            item = new GUIField(20, 580, 60, 60, Color.White, "Deselect");
+            item = new GUIField(20, 580, 60, 60, new Color(100, 100, 100), "Mine");
+            item.renderLayer = 90;
+            parts.Add(item);
+            Program.Objects.Add(item);
+            item = new GUIField(20, 660, 60, 60, Color.White, "Deselect");
             item.renderLayer = 90;
             item.shape.Texture = new Texture("./Resources/DeselectTool.png");
             parts.Add(item);
@@ -334,6 +338,10 @@ namespace TrySFML2
                             if (Cannon.Available)
                                 Program.ToCreate = new Cannon(x, y);
                             break;
+                        case "Mine":
+                            if (Mine.Available)
+                                Program.ToCreate = new Mine(x, y);
+                            break;
 
                         default:
                             break;
@@ -397,6 +405,12 @@ namespace TrySFML2
             color.A = Cannon.Available ? (byte)255 : (byte)100;
             s.FillColor = color;
             s.OutlineThickness = Program.ToCreate != null && Program.ToCreate.GetType() == typeof(Cannon) ? 2 : 0;
+
+            s = parts.Find(p => p.name == "Mine").shape;
+            color = s.FillColor;
+            color.A = Mine.Available ? (byte)255 : (byte)100;
+            s.FillColor = color;
+            s.OutlineThickness = Program.ToCreate != null && Program.ToCreate.GetType() == typeof(Mine) ? 2 : 0;
 
             return base.Update(timeDiff);
         }

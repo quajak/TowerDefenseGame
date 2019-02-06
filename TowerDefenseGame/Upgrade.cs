@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TrySFML2
+namespace TowerDefenseGame
 {
     internal enum UpdateType
     { Speed, Amount, Range, Special }
@@ -35,17 +35,17 @@ namespace TrySFML2
             {
                 case UpdateType.Speed:
                     Console.WriteLine($"Upgrading speed of {tower.Name} by {Name}");
-                    tower.AttackSpeed.modifiers.Add(Modifier);
+                    tower.AttackSpeed.Modifiers.Add(Modifier);
                     break;
 
                 case UpdateType.Amount:
                     Console.WriteLine($"Upgrading amount of {tower.Name} by {Name}");
-                    tower.Amount.modifiers.Add(Modifier);
+                    tower.Amount.Modifiers.Add(Modifier);
                     break;
 
                 case UpdateType.Range:
                     Console.WriteLine($"Upgrading range of {tower.Name} by {Name}");
-                    tower.Range.modifiers.Add(Modifier);
+                    tower.Range.Modifiers.Add(Modifier);
                     break;
 
                 default:

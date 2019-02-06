@@ -2,7 +2,7 @@
 using SFML.Window;
 using System.Collections.Generic;
 
-namespace TrySFML2
+namespace TowerDefenseGame
 {
     internal class MainMenuGUI : GUI
     {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using SFML.Graphics;
 using SFML.System;
 
-namespace TrySFML2
+namespace TowerDefenseGame
 {
     internal class Cannon : Tower
     {
@@ -39,7 +39,7 @@ namespace TrySFML2
                 }
             };
             CustomUpgrade explosionSize = new CustomUpgrade(null, 4, "Explosions I", "Exposions are 50% stronger",
-                t => (t as Cannon).ExplosionSize.modifiers.Add(new Modifier(ModifierType.Percentage, 50)))
+                t => (t as Cannon).ExplosionSize.Modifiers.Add(new Modifier(ModifierType.Percentage, 50)))
             {
                 Unlocks =
                 {
