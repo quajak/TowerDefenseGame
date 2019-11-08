@@ -6,14 +6,14 @@ namespace TowerDefenseGame
 {
     internal class Explosion : Entity
     {
-        private Animation animation;
+        private readonly Animation animation;
         public bool Active = true;
         private int activeCoutner = 2; //So it has one tick to do damage
         public readonly int Damage;
 
         public Explosion(float x, float y, float size, int damage) : base(x, y, new RectangleShape(new Vector2f(size, size)))
         {
-            renderLayer = 2;
+            renderLayer = 20;
             animation = new Animation(Animation.preLoadedTextures["Explosion"], 9, 9, 10)
             {
                 Playing = true
@@ -22,7 +22,7 @@ namespace TowerDefenseGame
             Damage = damage;
         }
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             activeCoutner--;
 
@@ -48,7 +48,7 @@ namespace TowerDefenseGame
         public Bullet(float aX, float aY, float vX, float vY, float maxDistance, float damage, float pierce, float bulletSize, Vector2f bulletTemplate,
             Type Creator, Action<Vector2f> OnFinish = null) : base(aX, aY, vX, vY, new RectangleShape(new Vector2f(bulletTemplate.X * bulletSize, bulletTemplate.Y * bulletSize)))
         {
-            renderLayer = 3;
+            renderLayer = 30;
             shape.Origin = new Vector2f(bulletTemplate.X / 2 * bulletSize, bulletTemplate.Y / 2 * bulletSize);
             shape.Rotation = (float)(Math.Atan(vY / vX) / (2 * Math.PI) * 360);
             this.maxDistance = maxDistance;
@@ -58,7 +58,7 @@ namespace TowerDefenseGame
             CreatorType = Creator;
         }
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             distance += (float)Math.Sqrt(Math.Pow(velocity.X * timeDiff / 1000f, 2) + Math.Pow(velocity.Y * timeDiff / 1000f, 2));
             if ((position.X < 0 || position.X > Program.GameSize.X) || (position.Y < 0 || position.Y > Program.GameSize.Y) || distance > maxDistance)
@@ -88,19 +88,20 @@ namespace TowerDefenseGame
     internal class Lazor : Entity
     {
         public double time;
+        public int damage;
 
-        public Lazor(float x, float y, float length, float width, float angle) : base(x, y, new RectangleShape(new Vector2f(length, width)) { Position = new Vector2f(x, y), Rotation = angle, FillColor = new Color(140, 14, 0, 255) })
+        public Lazor(float x, float y, float length, float width, float angle, int damage) : base(x, y, new RectangleShape(new Vector2f(length, width)) { Position = new Vector2f(x, y), Rotation = angle, FillColor = new Color(140, 14, 0, 255) })
         {
-            renderLayer = 3;
+            renderLayer = 30;
+            this.damage = damage;
         }
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             time += timeDiff;
-            if (time > 1000)
+            if (time > 1000 || damage <= 0)
                 Program.ToChange.Add(this);
             return base.Update(timeDiff);
         }
     }
-
 }

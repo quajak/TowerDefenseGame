@@ -7,8 +7,9 @@ namespace TowerDefenseGame
 {
     internal class IceTower : Tower
     {
-        private static int _cost = 12;
+        private const int _cost = 12;
         public int Damage = 0;
+        public int MaxCount = 10;
 
         public IceTower(float x, float y, bool buy = false) : base(x, y, new CircleShape(10f), _cost, "Ice Tower", "Slows down enemies in range by 50%", 150f, -10, 600f)
         {
@@ -26,12 +27,19 @@ namespace TowerDefenseGame
             {
                 Unlocks =
                 {
-                    new CustomUpgrade(new Modifier(ModifierType.Percentage, -10), 5, "Ice snap II", "Deals additional 2 damage", t => (t as IceTower).Damage += 2)
+                    new CustomUpgrade(null, 5, "Ice snap II", "Deals additional 2 damage", t => (t as IceTower).Damage += 2)
                     {
                         Unlocks =
                         {
-                            new CustomUpgrade(null, 20, "Ice snap III", "Deals additional 10 damage", t => (t as IceTower).Damage += 10),
-                            new Upgrade(new Modifier(ModifierType.Percentage, -66), 25, "Turbo Speed", "Attacks very quick", UpdateType.Speed)
+                            new CustomUpgrade(null, 30, "Ice snap III", "Deals additional 5 damage", t => (t as IceTower).Damage += 5),
+                            new Upgrade(new Modifier(ModifierType.Percentage, -50), 35, "Turbo Speed", "Attacks very quick", UpdateType.Speed)
+                        }
+                    },
+                    new CustomUpgrade(null, 5, "Colder I", "Ice snap can do an additional 10 damage", t => (t as IceTower).MaxCount += 10)
+                    {
+                        Unlocks =
+                        {
+                            new CustomUpgrade(null, 20, "Colder II", "Ice snap does an additional 20 total damage", t => (t as IceTower).MaxCount += 20)
                         }
                     }
                 }
@@ -53,18 +61,18 @@ namespace TowerDefenseGame
             return new IceTower(x, y, true);
         }
 
-        private List<Enemy> affected = new List<Enemy>();
-        float time = 0;
+        private readonly List<Enemy> affected = new List<Enemy>();
+        private float time = 0;
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             lock (Program.Enemies)
             {
-                affected.RemoveAll(a => !Program.Enemies.Contains(a));
+                affected.RemoveAll(a => !Program.Enemies.Contains(a) || Program.ToChange.Contains(a));
 
                 foreach (var enemy in Program.Enemies)
                 {
-                    if (!affected.Contains(enemy) && E.Distance(enemy, this) < Range.Value)
+                    if (!affected.Contains(enemy) && E.Distance(enemy, this) < Range.Value && !Program.ToChange.Contains(enemy))
                     {
                         Enemy item = enemy as Enemy;
                         Stat speed = item.Speed;
@@ -81,21 +89,29 @@ namespace TowerDefenseGame
             }
 
             //Ice attack
-            if(Damage != 0 && affected.Count != 0)
+            if (Damage != 0 && affected.Count != 0)
             {
+                int allowedPops = MaxCount;
                 time -= (float)timeDiff;
-                if(time < 0)
+                if (time < 0)
                 {
                     time = AttackSpeed.Value;
                     List<Enemy> toRemove = new List<Enemy>();
                     foreach (var enemy in affected)
                     {
-                        int dealtDamage = Math.Min(Damage, enemy.Size);
+                        int dealtDamage = Math.Min(Math.Min(allowedPops, Damage), enemy.Size);
+                        allowedPops -= dealtDamage;
                         if (dealtDamage == 0)
                             throw new Exception("Something when wrong!");
                         enemy.Pop(typeof(IceTower), dealtDamage);
                         if (enemy.Size <= 0)
+                        {
                             toRemove.Add(enemy);
+                        }
+                        if (allowedPops == 0)
+                        {
+                            break;
+                        }
                     }
                     toRemove.ForEach(e => affected.Remove(e));
                     lock (Program.ToChange)

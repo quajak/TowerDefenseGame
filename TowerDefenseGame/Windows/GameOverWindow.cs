@@ -6,9 +6,11 @@ using static TowerDefenseGame.Program;
 
 namespace TowerDefenseGame
 {
-    class GameOverWindow : Window{
-        Text gameOver;
-        Sprite background;
+    internal class GameOverWindow : Window, System.IDisposable
+    {
+        private readonly Text gameOver;
+        private readonly Sprite background;
+
         public GameOverWindow() : base()
         {
             Statistics.WriteStats();
@@ -20,7 +22,9 @@ namespace TowerDefenseGame
             };
 
             //Setup background graphics
-            background = new Sprite(new Texture("./Resources/background.png"));
+            var t = new Texture("./Resources/background.png");
+            background = new Sprite(t);
+            t.Dispose();
             background.Texture.Repeated = true;
             background.TextureRect = new IntRect(0, 0, (int)GameSize.X, (int)GameSize.Y);
         }
@@ -43,6 +47,12 @@ namespace TowerDefenseGame
                 window.Display();
             }
             return null;
+        }
+
+        public void Dispose()
+        {
+            gameOver.Dispose();
+            background.Dispose();
         }
     }
 }

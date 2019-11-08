@@ -8,10 +8,26 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>TrySFML2</RootNamespace>
     <AssemblyName>TrySFML2</AssemblyName>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -69,6 +85,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>lib\sfmlnet-window-2.dll</HintPath>
     </Reference>
+    <Reference Include="SharpNav">
+      <HintPath>..\..\SharpNav\Source\SharpNav\obj\Debug\SharpNav.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -80,12 +99,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Animation.cs" />
+    <Compile Include="GuiButton.cs" />
+    <Compile Include="Maps\Map.cs" />
+    <Compile Include="Towers\Terrain.cs" />
     <Compile Include="Towers\BankTower.cs" />
     <Compile Include="Towers\Bomb.cs" />
     <Compile Include="Towers\IceTower.cs" />
     <Compile Include="Towers\LazorGun.cs" />
     <Compile Include="Towers\MachineGun.cs" />
     <Compile Include="Towers\MainBase.cs" />
+    <Compile Include="Towers\Track.cs" />
     <Compile Include="Windows\GameOverWindow.cs" />
     <Compile Include="Windows\GameWindow.cs" />
     <Compile Include="Projectile.cs" />
@@ -106,7 +129,6 @@
     <Compile Include="Windows\Window.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
     <None Include="Resources\TitilliumWeb-Regular.ttf" />
   </ItemGroup>
   <ItemGroup>

@@ -6,9 +6,10 @@ using static TowerDefenseGame.Program;
 
 namespace TowerDefenseGame
 {
-    class MainMenuWindow : Window
+    internal class MainMenuWindow : Window
     {
-        MainMenuGUI mainMenu;
+        private readonly MainMenuGUI mainMenu;
+
         public MainMenuWindow() : base()
         {
             mainMenu = new MainMenuGUI();
@@ -47,7 +48,7 @@ namespace TowerDefenseGame
                     break;
                 }
             }
-            return new GameWindow(mainMenu.difficulty);
+            return new GameWindow(mainMenu.difficulty, mainMenu.chosen);
         }
     }
 }

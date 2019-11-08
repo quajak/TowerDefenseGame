@@ -6,12 +6,12 @@ namespace TowerDefenseGame
 {
     internal class Bomb : Tower
     {
-        private static int _cost = 1;
-        private static float maxRadius = 30;
+        private const int _cost = 1;
+        private const float maxRadius = 30;
         private float radius = 1;
-        private float growth = 0.03f;
+        private readonly float growth = 0.03f;
         private float timeAtMax = 0;
-        private static float maxTimeAtMax = 700; //In milliseconds
+        private const float maxTimeAtMax = 700; //In milliseconds
 
         public Bomb(float x, float y, bool buy = false) : base(x, y, new CircleShape(3), _cost, "Bomb", "Kills enemy while exploding", 0f, 0f)
         {
@@ -34,7 +34,7 @@ namespace TowerDefenseGame
             return new Bomb(x, y, true);
         }
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             if (radius > maxRadius)
             {
@@ -61,8 +61,7 @@ namespace TowerDefenseGame
 
     internal class Mine : Tower
     {
-        private static int _cost = 2;
-        private static float maxTimeAtMax = 800; //In milliseconds
+        private const int _cost = 2;
         private int damageToDo = 20;
 
         public Mine(float x, float y, bool buy = false) : base(x, y, new CircleShape(10), _cost, "Mine", "Does 20 damage", 0f, 0f)
@@ -86,16 +85,17 @@ namespace TowerDefenseGame
             get => damageToDo; set
             {
                 damageToDo = value;
-                if(damageToDo == 0)
+                if (damageToDo == 0)
                 {
                     int size = 80;
                     lock (Program.ToChange)
                     {
-                        Program.ToChange.Add(this); 
+                        Program.ToChange.Add(this);
                         Program.ToChange.Add(new Explosion(position.X - size / 2, position.Y - size / 2,
                                         size, 3));
                     }
-                } else if(damageToDo < 0)
+                }
+                else if (damageToDo < 0)
                 {
                     throw new Exception("Damage still to be dealt can not be negative!");
                 }
@@ -107,7 +107,7 @@ namespace TowerDefenseGame
             return new Mine(x, y, true);
         }
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             return base.Update(timeDiff);
         }

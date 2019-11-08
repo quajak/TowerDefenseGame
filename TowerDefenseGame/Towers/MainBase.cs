@@ -34,7 +34,7 @@ namespace TowerDefenseGame
 
         private double time = 0;
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             time -= timeDiff;
             while (time < 0)

@@ -1,24 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using TowerDefenseGame.Towers;
 using SFML.Graphics;
 using SFML.System;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TowerDefenseGame
 {
     internal class Cannon : Tower
     {
-        private static int _cost = 8;
+        private const int _cost = 8;
 
         public int ExtraPierce = 0;
         public Stat ExplosionSize = new Stat(60);
         public int ExplosionDamage = 1;
+        private readonly List<Entity> blockingTerrain;
 
         public Cannon(float x, float y, bool buy = false) : base(x, y, new RectangleShape(new Vector2f(20, 20)), _cost, "Cannon", "Shoot bullets which explode",
             200, 2, 500)
         {
+            blockingTerrain = Program.Terrains.Where(e => (e as Terrain).blocksBullets).ToList();
             if (buy)
                 Program.Money -= _cost;
             shape.Texture = new Texture("./Resources/cannon.png");
@@ -80,7 +81,7 @@ namespace TowerDefenseGame
 
         private float attackTime = 0;
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             attackTime -= (float)timeDiff;
             if (attackTime < 0)
@@ -92,10 +93,10 @@ namespace TowerDefenseGame
                         var possible = from enemy in Program.Enemies
                                        where E.Distance(this, enemy) < Range.Value
                                        select enemy;
-                        var list = possible.OrderBy(x => E.Distance(this, x)).Take(1).ToList();
-                        if (list.Count != 0)
+                        Entity item = possible.OrderBy(x => E.Distance(this, x))
+                            .FirstOrDefault(e => !Program.HitRayCast(position, e.position, blockingTerrain));
+                        if (item != null)
                         {
-                            Entity item = list[0];
                             //Generate bullet
                             var size = (shape as RectangleShape).Size;
                             float dX = item.position.X - (position.X + Program.Random.Next(2) - 1);
@@ -105,7 +106,7 @@ namespace TowerDefenseGame
                             float scale = E.Scale(vX, vY, 800);
                             //Rotate the gun
                             shape.Rotation = (float)Math.Atan2(vY, vX) / (2f * (float)Math.PI) * 360f - 90f;
-                            Bullet bullet = new Bullet(position.X, position.Y, vX * scale, vY * scale, 600, Amount.Value, Amount.Value,
+                            Bullet bullet = new Bullet(position.X, position.Y, vX * scale, vY * scale, Range.Value * 1.5f, Amount.Value, Amount.Value,
                                 1, new Vector2f(6, 6), typeof(Cannon),
                                 (p) => Program.ToChange.Add(new Explosion(p.X - ExplosionSize.Value / 2, p.Y - ExplosionSize.Value / 2,
                                     ExplosionSize.Value, ExplosionDamage)));

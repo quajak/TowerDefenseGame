@@ -1,12 +1,9 @@
 ﻿using SFML.Graphics;
 using SFML.Window;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TowerDefenseGame
 {
-
     internal class Tower : Entity
     {
         public int Cost = 0;
@@ -18,6 +15,7 @@ namespace TowerDefenseGame
         public List<Upgrade> Installed = new List<Upgrade>();
         public List<Upgrade> AvailableUpgrades = new List<Upgrade>();
         public List<Upgrade> Locked = new List<Upgrade>();
+        internal bool canSelect = true;
 
         public Tower(float ax, float ay, Shape shape, int cost, string name, string description, float range, float amount, float attackSpeed = 0) : base(ax, ay, shape)
         {
@@ -32,8 +30,11 @@ namespace TowerDefenseGame
 
         public override void OnClick(int x, int y, Mouse.Button button)
         {
-            Program.TowerGUI.visible = true;
-            Program.TowerGUI.Selected = this;
+            if (canSelect)
+            {
+                Program.TowerGUI.visible = true;
+                Program.TowerGUI.Selected = this;
+            }
             base.OnClick(x, y, button);
         }
     }

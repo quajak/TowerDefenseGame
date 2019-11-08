@@ -1,14 +1,17 @@
-﻿using SFML.Graphics;
+﻿using TowerDefenseGame.Towers;
+using SFML.Graphics;
 using SFML.System;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TowerDefenseGame
 {
     internal class MachineGun : Tower
     {
-        private static int _cost = 10;
+        private const int _cost = 10;
         public float BulletSize = 1;
+        private readonly List<Entity> blockingTerrain = new List<Entity>();
 
         public static bool Available
         {
@@ -26,6 +29,7 @@ namespace TowerDefenseGame
             shape.Origin = new Vector2f(10, 10);
             position = new Vector2f(position.X + 10, position.Y + 10);
             shape.Position = position;
+            blockingTerrain = Program.Terrains.Where(e => (e as Terrain).blocksBullets).ToList();
             if (buy)
                 Program.Money -= Cost;
             shape.Texture = new Texture("./Resources/MachineGun.png");
@@ -84,8 +88,13 @@ namespace TowerDefenseGame
             return new MachineGun(x, y, true);
         }
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
+            float value = Range.Value;
+            var actualBlocking = blockingTerrain.Where(t =>
+            {
+                return E.Distance(t, this) < value;
+            }).ToList();
             attackTime -= timeDiff;
             if (attackTime < 0)
             {
@@ -95,10 +104,10 @@ namespace TowerDefenseGame
                         var possible = from enemy in Program.Enemies
                                        where E.Distance(this, enemy) < Range.Value
                                        select enemy;
-                        var list = possible.OrderBy(x => E.Distance(this, x)).Take(1).ToList();
-                        if (list.Count != 0)
+                        Entity item = possible.OrderBy(x => E.Distance(this, x))
+                            .FirstOrDefault(e => !Program.HitRayCast(position, e.position, actualBlocking));
+                        if (item != null)
                         {
-                            Entity item = list[0];
                             //Generate bullet
                             var size = (shape as RectangleShape).Size;
                             float dX = item.position.X - (position.X + Program.Random.Next(10) - 5);

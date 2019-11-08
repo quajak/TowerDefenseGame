@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TowerDefenseGame
 {
     internal static class Statistics
     {
-        private static Dictionary<Type, int> damageCounter = new Dictionary<Type, int>();
+        private static readonly Dictionary<Type, int> damageCounter = new Dictionary<Type, int>();
 
         public static void WriteStats()
         {

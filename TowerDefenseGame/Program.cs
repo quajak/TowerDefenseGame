@@ -1,24 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using SFML;
-using SFML.Graphics;
+﻿using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TowerDefenseGame
 {
     internal class Program
     {
         public static GameEvent gameEvent = GameEvent.None;
-        private static RenderWindow window;
+        public static RenderWindow window;
 
         public static List<Entity> Objects = new List<Entity>();
         public static List<Entity> ToChange = new List<Entity>();
         public static List<Entity> Enemies = new List<Entity>();
+        public static List<Entity> Terrains = new List<Entity>();
         public static List<Entity> PlayerBuildings = new List<Entity>();
         public static List<Shape> Shapes = new List<Shape>(); //keep for debug reasons
         public static List<Text> Texts = new List<Text>();
@@ -49,9 +46,9 @@ namespace TowerDefenseGame
             }
         }
 
-        private static void Main(string[] args)
+        private static void Main(string[] _)
         {
-            window = new RenderWindow(VideoMode.DesktopMode, "Tower Defense Game");
+            window = new RenderWindow(VideoMode.DesktopMode, "Tower Defense Game", Styles.Default, new ContextSettings(0, 0, 8));
             GameSize = window.Size;
             window.Closed += Window_Closed;
             window.GainedFocus += Window_GainedFocus;
@@ -128,6 +125,26 @@ namespace TowerDefenseGame
                         }
                     }
                 }
+                else if (item.vertexArray != null) //Assume that it is not convex
+                {
+                    if (pnpoly(item.logicalPoints, X, Y))
+                    {
+                        return item;
+                    }
+                    bool pnpoly(List<Vector2f> points, double testx, double testy)
+                    {
+                        int nvert = points.Count;
+                        int i, j;
+                        bool c = false;
+                        for (i = 0, j = nvert - 1; i < nvert; j = i++)
+                        {
+                            if (((points[i].Y > testy) != (points[j].Y > testy)) &&
+                                    (testx < (points[j].X - points[i].X) * (testy - points[i].Y) / (points[j].Y - points[i].Y) + points[i].X))
+                                c = !c;
+                        }
+                        return c;
+                    }
+                }
             }
             return null;
         }
@@ -181,11 +198,11 @@ namespace TowerDefenseGame
         {
             //assume that the shapes are regular
             float maxLengthA = 0;
-            if(polygonA.shape is RectangleShape r)
+            if (polygonA.shape is RectangleShape r)
             {
                 maxLengthA = Math.Max(r.Size.X, r.Size.Y);
             }
-            else if(polygonA.shape is CircleShape c)
+            else if (polygonA.shape is CircleShape c)
             {
                 maxLengthA = c.Radius;
             }
@@ -202,13 +219,12 @@ namespace TowerDefenseGame
             if (Math.Abs(E.Distance(polygonA, polygonB)) > Math.Pow((maxLengthA + maxLengthB), 2))
                 return false;
 
-
             bool intersect = true;
 
             List<Vector2f> pointsA = polygonA.Points.ToList();
             List<Vector2f> pointsB = polygonB.Points.ToList();
-            int edgeCountA = pointsA.Count();
-            int edgeCountB = pointsB.Count();
+            int edgeCountA = pointsA.Count;
+            int edgeCountB = pointsB.Count;
             Vector2f edge;
 
             // Loop through all the edges of both polygons
@@ -242,6 +258,37 @@ namespace TowerDefenseGame
                     intersect = false;
             }
             return intersect;
+        }
+
+        internal static bool HitRayCast(Vector2f position, Vector2f p, List<Entity> toCheck)
+        {
+            float length = E.Distance(p, position);
+            return DoRayCast(position, p.X - position.X, p.Y - position.Y, length, toCheck) < length;
+        }
+
+        internal static float DoRayCast(Vector2f position, Vector2f p, List<Entity> toCheck)
+        {
+            return DoRayCast(position, p.X - position.X, p.Y - position.Y, E.Distance(p, position), toCheck);
+        }
+
+        public static float DoRayCast(Vector2f position, float dX, float dY, float length, List<Entity> toCheck)
+        {
+            float m = Math.Max(Math.Abs(dX), Math.Abs(dY));
+            float x = dX / m * 4;
+            float y = dY / m * 4;
+            float pX = position.X;
+            float pY = position.Y;
+            float distance = 0;
+            while (distance < length)
+            {
+                pX += x;
+                pY += y;
+                if (GetEntityAt(pX, pY, toCheck) != null)
+                    break;
+                distance = (float)Math.Sqrt((pX - position.X) * (pX - position.X) + (pY - position.Y) * (pY - position.Y));
+            }
+
+            return distance;
         }
 
         public enum GameEvent { Next, None };

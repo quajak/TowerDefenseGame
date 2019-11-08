@@ -2,9 +2,6 @@
 using SFML.Window;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TowerDefenseGame
 {
@@ -73,7 +70,7 @@ namespace TowerDefenseGame
 
     internal class UpgradeGUI : GUI
     {
-        private List<GUI> parts = new List<GUI>();
+        private readonly List<GUI> parts = new List<GUI>();
         public Upgrade Upgrade;
         public static float Height = 150;
 
@@ -82,11 +79,11 @@ namespace TowerDefenseGame
             Upgrade = upgrade;
             clickLayer = 1;
             shape.FillColor = Available ? new Color(59, 61, 61) : new Color(91, 59, 59);
-            GUIText gT = new GUIText(x + 10, y + 10, upgrade.Name, Color.Black, maxWidth: 160, offset: 20);
+            GUIText gT = new GUIText(x + 10, y + 10, upgrade.Name, maxWidth: 160, offset: 20);
             parts.Add(gT);
-            gT = new GUIText(x + 10, y + 60, upgrade.Description, Color.Black, maxWidth: 160, offset: 18);
+            gT = new GUIText(x + 10, y + 60, upgrade.Description, maxWidth: 160, offset: 18);
             parts.Add(gT);
-            gT = new GUIText(x + 10, y + 120, $"${upgrade.Cost}", Color.Black, maxWidth: 160, offset: 18);
+            gT = new GUIText(x + 10, y + 120, $"${upgrade.Cost}", maxWidth: 160, offset: 18);
             parts.Add(gT);
         }
 
@@ -104,7 +101,7 @@ namespace TowerDefenseGame
             get => Program.Money >= Upgrade.Cost;
         }
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             shape.FillColor = Available ? new Color(59, 61, 61) : new Color(91, 59, 59);
             return base.Update(timeDiff);

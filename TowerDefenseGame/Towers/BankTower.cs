@@ -5,7 +5,7 @@ namespace TowerDefenseGame
 {
     internal class BankTower : Tower
     {
-        private static int _cost = 20;
+        private const int _cost = 20;
 
         public BankTower(float x, float y, bool buy = false) : base(x, y, new RectangleShape(new Vector2f(25, 25)), _cost,
             "Bank", $"Creates ${Program.MoneyRate} every 3 seconds", 0f, Program.MoneyRate, 3_000f)
@@ -35,7 +35,7 @@ namespace TowerDefenseGame
 
         public override void Collision(Entity collided)
         {
-            if (collided is Enemy e)
+            if (collided is Enemy)
             {
                 Program.ToChange.Add(this);
             }
@@ -48,7 +48,7 @@ namespace TowerDefenseGame
 
         private float moneyTime = 0;
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             Description = $"Creates ${(int)Amount.Value} every {(AttackSpeed.Value / 1000f).ToString("0.0")} seconds";
             moneyTime += (float)timeDiff;
