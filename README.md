@@ -1,5 +1,5 @@
 # TowerDefenseGame
-A quite badly made game in C# using SFML.
+A tower defense made game in C# using SFML. It has a few ideas not found in most other tower defense games.
 
 Runs on https://www.sfml-dev.org/download/sfml.net/ but the dll should be included..
 
