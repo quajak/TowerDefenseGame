@@ -2,11 +2,8 @@
 using SFML.Window;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace TrySFML2
+namespace TowerDefenseGame
 {
     internal enum UpdateType
     { Speed, Amount, Range, Special }
@@ -35,17 +32,17 @@ namespace TrySFML2
             {
                 case UpdateType.Speed:
                     Console.WriteLine($"Upgrading speed of {tower.Name} by {Name}");
-                    tower.AttackSpeed.modifiers.Add(Modifier);
+                    tower.AttackSpeed.Modifiers.Add(Modifier);
                     break;
 
                 case UpdateType.Amount:
                     Console.WriteLine($"Upgrading amount of {tower.Name} by {Name}");
-                    tower.Amount.modifiers.Add(Modifier);
+                    tower.Amount.Modifiers.Add(Modifier);
                     break;
 
                 case UpdateType.Range:
                     Console.WriteLine($"Upgrading range of {tower.Name} by {Name}");
-                    tower.Range.modifiers.Add(Modifier);
+                    tower.Range.Modifiers.Add(Modifier);
                     break;
 
                 default:
@@ -73,7 +70,7 @@ namespace TrySFML2
 
     internal class UpgradeGUI : GUI
     {
-        private List<GUI> parts = new List<GUI>();
+        private readonly List<GUI> parts = new List<GUI>();
         public Upgrade Upgrade;
         public static float Height = 150;
 
@@ -82,11 +79,11 @@ namespace TrySFML2
             Upgrade = upgrade;
             clickLayer = 1;
             shape.FillColor = Available ? new Color(59, 61, 61) : new Color(91, 59, 59);
-            GUIText gT = new GUIText(x + 10, y + 10, upgrade.Name, Color.Black, maxWidth: 160, offset: 20);
+            GUIText gT = new GUIText(x + 10, y + 10, upgrade.Name, maxWidth: 160, offset: 20);
             parts.Add(gT);
-            gT = new GUIText(x + 10, y + 60, upgrade.Description, Color.Black, maxWidth: 160, offset: 18);
+            gT = new GUIText(x + 10, y + 60, upgrade.Description, maxWidth: 160, offset: 18);
             parts.Add(gT);
-            gT = new GUIText(x + 10, y + 120, $"${upgrade.Cost}", Color.Black, maxWidth: 160, offset: 18);
+            gT = new GUIText(x + 10, y + 120, $"${upgrade.Cost}", maxWidth: 160, offset: 18);
             parts.Add(gT);
         }
 
@@ -104,7 +101,7 @@ namespace TrySFML2
             get => Program.Money >= Upgrade.Cost;
         }
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             shape.FillColor = Available ? new Color(59, 61, 61) : new Color(91, 59, 59);
             return base.Update(timeDiff);

@@ -1,12 +1,9 @@
 ﻿using SFML.Graphics;
 using SFML.System;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace TrySFML2
+namespace TowerDefenseGame
 {
     internal class Animation
     {
@@ -16,7 +13,7 @@ namespace TrySFML2
         };
 
         public Texture Texture;
-        private List<IntRect> positions = new List<IntRect>();
+        private readonly List<IntRect> positions = new List<IntRect>();
         public bool Playing;
         private readonly int frameNumber;
         private readonly float speed;
@@ -62,11 +59,11 @@ namespace TrySFML2
         }
     }
 
-    class IceCircle : Entity
+    internal class IceCircle : Entity
     {
         private readonly float radius;
 
-        public IceCircle(float x, float y, float radius) : base(x,y, new CircleShape(0))
+        public IceCircle(float x, float y, float radius) : base(x, y, new CircleShape(0))
         {
             renderLayer = 10;
             shape.Position = new Vector2f(x, y);
@@ -76,15 +73,19 @@ namespace TrySFML2
             this.radius = radius;
         }
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             float v = (float)timeDiff / 200f * radius;
             (shape as CircleShape).Radius += v;
             position = new Vector2f(position.X - v, position.Y - v);
             shape.Position = position;
             if ((shape as CircleShape).Radius > radius)
+            {
                 lock (Program.ToChange)
+                {
                     Program.ToChange.Add(this);
+                }
+            }
 
             return shape;
         }

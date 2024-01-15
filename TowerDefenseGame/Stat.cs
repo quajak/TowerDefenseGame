@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace TrySFML2
+namespace TowerDefenseGame
 {
     internal class Stat
     {
-        public List<Modifier> modifiers = new List<Modifier>();
+        public List<Modifier> Modifiers = new List<Modifier>();
         public float baseValue;
 
         public Stat(float baseValue)
@@ -21,8 +19,8 @@ namespace TrySFML2
             get
             {
                 float value = baseValue;
-                modifiers = modifiers.OrderBy(m => m.type).ToList(); //Order, so that first values are applied, then percentages and the absolute values
-                foreach (var modifier in modifiers)
+                Modifiers = Modifiers.OrderBy(m => m.type).ToList(); //Order, so that first values are applied, then percentages and the absolute values
+                foreach (var modifier in Modifiers)
                 {
                     value = modifier.Apply(value); //TODO: What to do when there are two absolute values?
                 }

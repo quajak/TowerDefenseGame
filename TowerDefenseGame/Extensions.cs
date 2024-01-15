@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace TrySFML2
+namespace TowerDefenseGame
 {
-    static class Extensions
+    internal static class Extensions
     {
         public static bool NextBool(this Random random)
         {

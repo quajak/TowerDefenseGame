@@ -1,11 +1,12 @@
-﻿using SFML.Graphics;
+﻿using TowerDefenseGame.Towers;
+using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TrySFML2
+namespace TowerDefenseGame
 {
     internal abstract class GUI : Entity
     {
@@ -52,7 +53,7 @@ namespace TrySFML2
             base.OnClick(x, y, button);
         }
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             var _size = (shape as RectangleShape).Size;
             _size.X = visible ? size.X : 0;
@@ -86,7 +87,7 @@ namespace TrySFML2
             };
         }
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             return shape;
         }
@@ -101,7 +102,7 @@ namespace TrySFML2
         private readonly float maxWidth;
         private readonly float offset;
 
-        public GUIText(float x, float y, string content, Color color, int font = 16, string name = "", float maxWidth = 200, float offset = 40) : base(x, y, 1, 1, name)
+        public GUIText(float x, float y, string content, int font = 16, string name = "", float maxWidth = 200, float offset = 40) : base(x, y, 1, 1, name)
         {
             shape = null;
             texts = Wrap(content, font, maxWidth, x, y, offset);
@@ -137,6 +138,7 @@ namespace TrySFML2
                 }
                 //v is used to start the next
                 texts.Add(active);
+                nextActive.Dispose();
 
                 if (active.DisplayedString.Length == 0 && words.Count != 0)
                     throw new Exception("Word is too long to be wrapped!");
@@ -182,98 +184,87 @@ namespace TrySFML2
         }
     }
 
-    internal class GuiButton : GUI
-    {
-        public string Content
-        {
-            get
-            {
-                return content;
-            }
-            set
-            {
-                content = value;
-                text.Content = content;
-            }
-        }
-
-        private GUIText text;
-        private string content;
-
-        public GuiButton(float x, float y, float width, float height, Color color, string content, string name = "") : base(x, y, width, height, name)
-        {
-            shape.FillColor = color;
-            renderLayer = 10;
-            clickLayer = 1;
-            text = new GUIText(x + 10, y + 10, content, Color.Red);
-            this.content = content;
-        }
-
-        public override void OnClick(int x, int y, Mouse.Button button)
-        {
-            MouseButtonEventArgs args = new MouseButtonEventArgs(new MouseButtonEvent() { X = x, Y = y, Button = button });
-            Click.Invoke(this, args);
-        }
-
-        public override void Delete()
-        {
-            text.Delete();
-            base.Delete();
-        }
-
-        public event EventHandler<MouseButtonEventArgs> Click;
-    }
-
     internal class MenuGUI : GUI
     {
-        private List<GUI> parts = new List<GUI>();
+        private readonly List<GUI> parts = new List<GUI>();
 
         public MenuGUI() : base(0, 0, 100, 1000)
         {
             clickLayer = 1;
             renderLayer = 80;
             shape.FillColor = new Color(110, 114, 114, 200);
-            GUIField item = new GUIField(80, 0, 20, 20, Color.Red, "Hide");
-            item.renderLayer = 90;
+            GUIField item = new GUIField(80, 0, 20, 20, Color.Red, "Hide")
+            {
+                renderLayer = 90
+            };
             parts.Add(item);
             Program.Objects.Add(item);
-            item = new GUIField(20, 20, 60, 60, Color.White, "Controller");
-            item.renderLayer = 90;
+            item = new GUIField(20, 20, 60, 60, Color.White, "Controller")
+            {
+                renderLayer = 90
+            };
             item.shape.Texture = new Texture("./Resources/mainBase.jpg");
             parts.Add(item);
             Program.Objects.Add(item);
-            item = new GUIField(20, 100, 60, 60, Color.White, "MachineGun");
-            item.renderLayer = 90;
+            item = new GUIField(20, 100, 60, 60, Color.White, "MachineGun")
+            {
+                renderLayer = 90
+            };
             item.shape.Texture = new Texture("./Resources/MachineGun.png");
             parts.Add(item);
             Program.Objects.Add(item);
-            item = new GUIField(20, 180, 60, 60, Color.White, "LazorGun");
-            item.renderLayer = 90;
+            item = new GUIField(20, 180, 60, 60, Color.White, "LazorGun")
+            {
+                renderLayer = 90
+            };
             item.shape.Texture = new Texture("./Resources/LazorGun.png");
             parts.Add(item);
             Program.Objects.Add(item);
-            item = new GUIField(20, 260, 60, 60, Color.Black, "Bomb");
-            item.renderLayer = 90;
+            item = new GUIField(20, 260, 60, 60, Color.Black, "Bomb")
+            {
+                renderLayer = 90
+            };
+            item.shape.Texture = new Texture("./Resources/bomb.png");
             parts.Add(item);
             Program.Objects.Add(item);
-            item = new GUIField(20, 340, 60, 60, Color.White, "Bank");
-            item.renderLayer = 1900;
+            item = new GUIField(20, 340, 60, 60, Color.White, "Bank")
+            {
+                renderLayer = 1900
+            };
             item.shape.Texture = new Texture("./Resources/BankTower.png");
             parts.Add(item);
             Program.Objects.Add(item);
-            item = new GUIField(20, 420, 60, 60, Color.White, "IceTower");
-            item.renderLayer = 90;
+            item = new GUIField(20, 420, 60, 60, Color.White, "IceTower")
+            {
+                renderLayer = 90
+            };
             item.shape.Texture = new Texture("./Resources/IceTower.png");
             parts.Add(item);
             Program.Objects.Add(item);
-            item = new GUIField(20, 580, 60, 60, Color.White, "Deselect");
-            item.renderLayer = 90;
-            item.shape.Texture = new Texture("./Resources/DeselectTool.png");
+            item = new GUIField(20, 580, 60, 60, new Color(100, 100, 100), "Mine")
+            {
+                renderLayer = 90
+            };
             parts.Add(item);
             Program.Objects.Add(item);
-            item = new GUIField(20, 500, 60, 60, Color.White, "Cannon");
-            item.renderLayer = 90;
+            item = new GUIField(20, 500, 60, 60, Color.White, "Cannon")
+            {
+                renderLayer = 90
+            };
             item.shape.Texture = new Texture("./Resources/Cannon.png");
+            parts.Add(item);
+            Program.Objects.Add(item);
+            item = new GUIField(20, 660, 60, 60, Color.Blue, "Track")
+            {
+                renderLayer = 90
+            };
+            parts.Add(item);
+            Program.Objects.Add(item);
+            item = new GUIField(20, 740, 60, 60, Color.White, "Deselect")
+            {
+                renderLayer = 90
+            };
+            item.shape.Texture = new Texture("./Resources/DeselectTool.png");
             parts.Add(item);
             Program.Objects.Add(item);
         }
@@ -335,6 +326,16 @@ namespace TrySFML2
                                 Program.ToCreate = new Cannon(x, y);
                             break;
 
+                        case "Mine":
+                            if (Mine.Available)
+                                Program.ToCreate = new Mine(x, y);
+                            break;
+
+                        case "Track":
+                            if (Track.Available)
+                                Program.ToCreate = new Track(x, y, false);
+                            break;
+
                         default:
                             break;
                     }
@@ -354,7 +355,7 @@ namespace TrySFML2
             base.OnClick(x, y, button);
         }
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             Shape s = parts.Find(p => p.name == "Controller").shape;
             Color color = s.FillColor;
@@ -398,13 +399,25 @@ namespace TrySFML2
             s.FillColor = color;
             s.OutlineThickness = Program.ToCreate != null && Program.ToCreate.GetType() == typeof(Cannon) ? 2 : 0;
 
+            s = parts.Find(p => p.name == "Mine").shape;
+            color = s.FillColor;
+            color.A = Mine.Available ? (byte)255 : (byte)100;
+            s.FillColor = color;
+            s.OutlineThickness = Program.ToCreate != null && Program.ToCreate.GetType() == typeof(Mine) ? 2 : 0;
+
+            s = parts.Find(p => p.name == "Track").shape;
+            color = s.FillColor;
+            color.A = Mine.Available ? (byte)255 : (byte)100;
+            s.FillColor = color;
+            s.OutlineThickness = Program.ToCreate != null && Program.ToCreate.GetType() == typeof(Track) ? 2 : 0;
+
             return base.Update(timeDiff);
         }
     }
 
     internal class TowerOverViewGUI : GUI
     {
-        private List<GUI> parts = new List<GUI>();
+        private readonly List<GUI> parts = new List<GUI>();
         public Tower Selected = null;
 
         public TowerOverViewGUI() : base(Program.GameSize.X - 200, 0, 200, Program.GameSize.Y)
@@ -412,15 +425,15 @@ namespace TrySFML2
             float x = Program.GameSize.X;
             shape.FillColor = new Color(110, 114, 114, 200);
             visible = false;
-            GUIText gText = new GUIText(x - 190, 10, "Name", Color.Black, 20, "Name", 180);
+            GUIText gText = new GUIText(x - 190, 10, "Name", 20, "Name", 180);
             parts.Add(gText);
-            gText = new GUIText(x - 190, 100, "Description", Color.Black, name: "Desc", maxWidth: 180, offset: 20);
+            gText = new GUIText(x - 190, 100, "Description", name: "Desc", maxWidth: 180, offset: 20);
             parts.Add(gText);
             clickLayer = 2;
             renderLayer = 90;
         }
 
-        public override Shape Update(double timeDiff)
+        public override Drawable Update(double timeDiff)
         {
             var toRemove = parts.Where(p => p.name.Contains("upgrade")).ToList();
             toRemove.ForEach(p => p.Delete());
