@@ -30,7 +30,9 @@ namespace TowerDefenseGame
             shape.TextureRect = animation.Play((float)timeDiff);
 
             if (animation.Finished)
+            {
                 Program.ToChange.Add(this);
+            }
 
             return base.Update(timeDiff);
         }
@@ -67,7 +69,9 @@ namespace TowerDefenseGame
                 {
                     Program.ToChange.Add(this);
                     if (onFinish != null)
+                    {
                         onFinish.Invoke(position);
+                    }
                 }
             }
             return base.Update(timeDiff);
@@ -100,7 +104,9 @@ namespace TowerDefenseGame
         {
             time += timeDiff;
             if (time > 1000 || damage <= 0)
+            {
                 Program.ToChange.Add(this);
+            }
             return base.Update(timeDiff);
         }
     }

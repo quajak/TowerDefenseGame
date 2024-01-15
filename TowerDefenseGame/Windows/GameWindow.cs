@@ -241,7 +241,7 @@ namespace TowerDefenseGame
 
 #pragma warning disable IDE0051 // Remove unused private members
 
-        private static Terrain ShowPath(Vector3 start, Vector3 end)
+        public static Terrain ShowPath(Vector3 start, Vector3 end)
 #pragma warning restore IDE0051 // Remove unused private members
         {
             List<Vector3> p = FindPath(start, end);
@@ -452,7 +452,9 @@ namespace TowerDefenseGame
                 lock (ToChange)
                 {
                     if (ToChange.Count != ToChange.Distinct().Count())
+                    {
                         throw new Exception("Dublicates exist in to change!");
+                    }
                     foreach (var item in ToChange)
                     {
                         if (Objects.Exists(x => x == item)) Objects.Remove(item);

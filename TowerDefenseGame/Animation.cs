@@ -80,8 +80,12 @@ namespace TowerDefenseGame
             position = new Vector2f(position.X - v, position.Y - v);
             shape.Position = position;
             if ((shape as CircleShape).Radius > radius)
+            {
                 lock (Program.ToChange)
+                {
                     Program.ToChange.Add(this);
+                }
+            }
 
             return shape;
         }

@@ -97,10 +97,11 @@ namespace TowerDefenseGame
                     {
                         path.Add(entirePath[i].ToV2());
                     }
+                    GameWindow.ShowPath(position.ToV3(), Program.mainBase.position.ToV3());
                     path.Add(entirePath.Last().ToV2());
                     paths[position.ToString()] = path;
                 }
-                catch (System.InvalidOperationException)
+                catch (System.InvalidOperationException) //TODO: Remove this
                 {
                     if (!Program.ToChange.Contains(this))
                     {
